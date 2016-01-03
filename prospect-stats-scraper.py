@@ -8,6 +8,7 @@ import sys
 import csv
 from bs4 import BeautifulSoup
 NAME = 1
+TEAM = 2
 GAMES = 3
 GOALS = 4
 ASSISTS = 5
@@ -19,13 +20,16 @@ PLUSMINUS = 9
 
 def get_player_points(league, season):
 
-	resultsArray = [['Name','GP','G','A','TP','PIM','+/-']]
+	league = str(league)
+	season = str(season)
+
+	resultsArray = [['Name','Season','League','Team','GP','G','A','TP','PIM','+/-']]
 	namesArray = []
 	pageIndex = 1
 	done = False
 
 	while not done:
-		url = "http://www.eliteprospects.com/league.php?currentpage={0}&season={1}&leagueid={2}".format(str(pageIndex), str(season), str(league))
+		url = "http://www.eliteprospects.com/league.php?currentpage={0}&season={1}&leagueid={2}".format(str(pageIndex), season, league)
 		r = requests.get(url)
 
 		regex = re.compile('PLAYER STATS')
@@ -57,6 +61,9 @@ def get_player_points(league, season):
 				namesArray.append(playerName)
 				resultsArray.append([
 					playerName, 
+					season,
+					league,
+					playerStats[TEAM].text,
 					playerStats[GAMES].text,  
 					playerStats[GOALS].text, 
 					playerStats[ASSISTS].text, 
@@ -66,7 +73,7 @@ def get_player_points(league, season):
 
 		pageIndex += 1
 
-	with open('{0}-{1}.csv'.format(str(league), str(season)), 'w', newline='') as csvFile:
+	with open('{0}-{1}.csv'.format(league, season), 'w', newline='') as csvFile:
 		csvWriter = csv.writer(csvFile)
 		for resultRow in resultsArray:
 			csvWriter.writerow(resultRow)
