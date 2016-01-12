@@ -58,12 +58,16 @@ def get_player_points(league, season):
 					done = True
 					break
 
+				playerTeam = playerStats[TEAM].text
+				if (playerTeam == 'totals'):
+					playerTeam = 'multiple'
+
 				idsArray.append(playerId)
 				resultsArray.append([
 					playerStats[NAME].a.text, 
 					season,
 					league,
-					playerStats[TEAM].text,
+					playerTeam,
 					playerStats[GAMES].text,  
 					playerStats[GOALS].text, 
 					playerStats[ASSISTS].text, 
