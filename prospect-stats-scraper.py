@@ -7,6 +7,7 @@ import re
 import sys
 import csv
 from bs4 import BeautifulSoup
+ID = 0
 NAME = 1
 TEAM = 2
 GAMES = 3
@@ -23,12 +24,12 @@ def get_player_points(league, season):
 	league = str(league)
 
 	resultsArray = [['Name','Season','League','Team','GP','G','A','TP','PIM','+/-']]
-	namesArray = []
+	idsArray = []
 	pageIndex = 1
 	done = False
 
 	while not done:
-		url = "http://www.eliteprospects.com/league.php?currentpage={0}&season={1}&leagueid={2}".format(str(pageIndex), str(season - 1), league)
+		url = "http://www.eliteprospects.com/league.php?currentpage={0}&season={1}&leagueid={2}".format(str(pageIndex), str(int(season) - 1), league)
 		r = requests.get(url)
 
 		regex = re.compile('PLAYER STATS')
@@ -52,14 +53,14 @@ def get_player_points(league, season):
 				if playerStats[NAME].a is None or '-' in playerStats[GOALS]:
 					continue
 
-				playerName = playerStats[NAME].a.text
-				if playerName in namesArray:
+				playerId = playerStats[ID].text
+				if playerId in idsArray:
 					done = True
 					break
 
-				namesArray.append(playerName)
+				idsArray.append(playerId)
 				resultsArray.append([
-					playerName, 
+					playerStats[NAME].a.text, 
 					season,
 					league,
 					playerStats[TEAM].text,
