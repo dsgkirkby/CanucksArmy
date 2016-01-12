@@ -1,0 +1,75 @@
+#!/usr/bin/python
+
+__author__ = 'dylan'
+
+import requests
+import re
+import sys
+import csv
+import html5lib
+from bs4 import BeautifulSoup
+
+""" ROSTER PARSER """
+
+def get_player_rosters(league, season):
+
+	league = str(league)
+	season = str(season)
+
+	resultsArray = [[]]
+	namesArray = []
+
+	""" Find the link to the league's team list """
+
+	leagueSearchUrl = "http://www.eliteprospects.com/teamsearch.php"
+	leagueSearchRequest = requests.get(leagueSearchUrl)
+
+	""" Find an <a> tag with the league name in its text """
+	def league_link(tag):
+		return tag.name == 'a' and len(re.findall(league, tag.text, re.IGNORECASE)) > 0 and len(re.findall('teamsearch2', tag.attrs['href'], re.IGNORECASE)) > 0
+
+	leagueSearchPage = leagueSearchRequest.text.replace('<br>', '<br/>')
+	leagueSearchPage = BeautifulSoup(leagueSearchPage, "html.parser")
+	leagueLink = leagueSearchPage.find(league_link)
+
+	""" Find all team IDs """
+
+	teamSearchUrl = "http://www.eliteprospects.com/" + leagueLink.attrs['href']
+	teamSearchRequest = requests.get(teamSearchUrl)
+
+	# All tag names have this prepended to them
+	htmlPrefix = '{http://www.w3.org/1999/xhtml}'
+	teamSearchPage = html5lib.parse(teamSearchRequest.text)
+	#xpath: /html/body/div/table[3]/tbody/tr/td[5]/table[1]
+	teamTable = teamSearchPage.find('./{0}body/{0}div/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[1]'.format(htmlPrefix))
+	
+	teamLinks = teamTable.findall('.//{0}a'.format(htmlPrefix))
+
+	teamIds = []
+
+	for teamLink in teamLinks:
+		teamId = (re.findall('(?<=team.php\?team\=)[0-9]+', teamLink.attrib['href'], re.IGNORECASE))
+		if len(teamId) > 0:
+			if teamId[0] not in teamIds:
+				teamIds.append(teamId[0])
+
+	for teamId in teamIds:
+		print(str(teamId))
+		teamPageRequest = requests.get('http://www.eliteprospects.com/team.php?team={0}&year0={1}'.format(teamId, season))
+		teamPage = BeautifulSoup(teamPageRequest.text, "html.parser")
+		def global_nav(tag):
+			return tag.has_attr('id') and tag.attrs['id'] == 'globalnav'
+		playerTable = teamPage.find(global_nav).next_sibling
+		print(playerTable)
+		break
+
+
+""" MAIN """
+
+def main():
+	if len(sys.argv) < 3:
+		print("Usage: expects 2 arguments - name of league (i.e. 'QMJHL') and season (start year only, i.e. '2015' for 2014-15)")
+		return
+	get_player_rosters(sys.argv[1], sys.argv[2])
+
+main()
