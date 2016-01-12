@@ -21,7 +21,6 @@ PLUSMINUS = 9
 def get_player_points(league, season):
 
 	league = str(league)
-	season = str(season)
 
 	resultsArray = [['Name','Season','League','Team','GP','G','A','TP','PIM','+/-']]
 	namesArray = []
@@ -29,7 +28,7 @@ def get_player_points(league, season):
 	done = False
 
 	while not done:
-		url = "http://www.eliteprospects.com/league.php?currentpage={0}&season={1}&leagueid={2}".format(str(pageIndex), season, league)
+		url = "http://www.eliteprospects.com/league.php?currentpage={0}&season={1}&leagueid={2}".format(str(pageIndex), str(season - 1), league)
 		r = requests.get(url)
 
 		regex = re.compile('PLAYER STATS')
@@ -84,7 +83,7 @@ def get_player_points(league, season):
 
 def main():
 	if len(sys.argv) < 3:
-		print("Usage: expects 2 arguments - name of league (i.e. 'QMJHL') and season (start year only, i.e. '2015' for 2015-16)")
+		print("Usage: expects 2 arguments - name of league (i.e. 'QMJHL') and season (start year only, i.e. '2015' for 2014-15)")
 		return
 	get_player_points(sys.argv[1], sys.argv[2])
 
