@@ -21,12 +21,12 @@ def get_player_rosters(league, season):
 
 	""" Find the link to the league's team list """
 
-	leagueSearchUrl = "http://www.eliteprospects.com/teamsearch.php"
+	leagueSearchUrl = "http://www.eliteprospects.com/league_central.php"
 	leagueSearchRequest = requests.get(leagueSearchUrl)
 
 	""" Find an <a> tag with the league name in its text """
 	def league_link(tag):
-		return tag.name == 'a' and len(re.findall(league, tag.text, re.IGNORECASE)) > 0 and len(re.findall('teamsearch2', tag.attrs['href'], re.IGNORECASE)) > 0
+		return tag.name == 'a' and tag.text.strip().lower() == league.lower() and len(re.findall('league_home.php', tag.attrs['href'], re.IGNORECASE)) > 0
 
 	leagueSearchPage = leagueSearchRequest.text.replace('<br>', '<br/>')
 	leagueSearchPage = BeautifulSoup(leagueSearchPage, "html.parser")
@@ -34,7 +34,7 @@ def get_player_rosters(league, season):
 
 	""" Find all team IDs """
 
-	teamSearchUrl = "http://www.eliteprospects.com/" + leagueLink.attrs['href']
+	teamSearchUrl = "http://www.eliteprospects.com/" + leagueLink.attrs['href'] + "&startdate=" + season
 	teamSearchRequest = requests.get(teamSearchUrl)
 
 	# All tag names have this prepended to them
