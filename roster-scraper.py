@@ -34,28 +34,27 @@ def get_player_rosters(league, season):
 
 	""" Find all team IDs """
 
+	def roster_title(tag):
+		return tag.name == 'div' and tag.text.strip().lower() == 'team rosters'
+
 	teamSearchUrl = "http://www.eliteprospects.com/" + leagueLink.attrs['href'] + "&startdate=" + season
 	teamSearchRequest = requests.get(teamSearchUrl)
 
 	# All tag names have this prepended to them
 	htmlPrefix = '{http://www.w3.org/1999/xhtml}'
 	teamSearchPage = html5lib.parse(teamSearchRequest.text)
-	#xpath: /html/body/div/table[3]/tbody/tr/td[5]/table[1]
-	teamTable = teamSearchPage.find('./{0}body/{0}div/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[1]'.format(htmlPrefix))
+	#xpath: /html/body/div[2]/table[3]/tbody/tr/td[5]/table[3]
+	teamTable = teamSearchPage.find('./{0}body/{0}div[2]/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[3]'.format(htmlPrefix))
 	
-	teamLinks = teamTable.findall('.//{0}a'.format(htmlPrefix))
+	teams = teamTable.findall('.//{0}tbody/{0}tr/{0}td/{0}a'.format(htmlPrefix))
 
-	teamIds = []
+	teamUrls = []
 
-	for teamLink in teamLinks:
-		teamId = (re.findall('(?<=team.php\?team\=)[0-9]+', teamLink.attrib['href'], re.IGNORECASE))
-		if len(teamId) > 0:
-			if teamId[0] not in teamIds:
-				teamIds.append(teamId[0])
+	for team in teams:
+		teamUrls.append(team.attrib['href'])
 
-	for teamId in teamIds:
-		print(str(teamId))
-		teamPageRequest = requests.get('http://www.eliteprospects.com/team.php?team={0}&year0={1}'.format(teamId, season))
+	for teamUrl in teamUrls:
+		teamPageRequest = requests.get('http://www.eliteprospects.com/{0}&year0={1}'.format(teamUrl, season))
 		teamPage = BeautifulSoup(teamPageRequest.text, "html.parser")
 		def global_nav(tag):
 			return tag.has_attr('id') and tag.attrs['id'] == 'globalnav'
