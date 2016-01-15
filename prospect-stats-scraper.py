@@ -23,7 +23,7 @@ def get_player_points(league, season):
 
 	league = str(league)
 
-	resultsArray = [['Name','Season','League','Team','GP','G','A','TP','PIM','+/-']]
+	resultsArray = [['Name','Position','Season','League','Team','GP','G','A','TP','PIM','+/-']]
 	idsArray = []
 	pageIndex = 1
 	done = False
@@ -64,7 +64,8 @@ def get_player_points(league, season):
 
 				idsArray.append(playerId)
 				resultsArray.append([
-					playerStats[NAME].a.text, 
+					playerStats[NAME].a.text,
+					playerStats[NAME].font.text.strip()[1:-1],
 					season,
 					league,
 					playerTeam,
