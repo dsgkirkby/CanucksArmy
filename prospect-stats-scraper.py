@@ -78,7 +78,7 @@ def get_player_points(league, season):
 
 		pageIndex += 1
 
-	with open('{0}-{1}.csv'.format(league, season), 'w', newline='') as csvFile:
+	with open('{0}-{1}-stats.csv'.format(league, season), 'w', newline='') as csvFile:
 		csvWriter = csv.writer(csvFile)
 		for resultRow in resultsArray:
 			csvWriter.writerow(resultRow)
