@@ -24,7 +24,7 @@ def get_player_points(league, season):
 	league = str(league)
 
 	resultsArray = [['Name','Position','Season','League','Team','GP','G','A','TP','PIM','+/-']]
-	idsArray = []
+	playerIds = []
 	pageIndex = 1
 	done = False
 
@@ -53,8 +53,8 @@ def get_player_points(league, season):
 				if playerStats[NAME].a is None or '-' in playerStats[GOALS]:
 					continue
 
-				playerId = playerStats[ID].text
-				if playerId in idsArray:
+				playerId = get_player_id(playerStats)
+				if playerId in playerIds:
 					done = True
 					break
 
@@ -62,7 +62,7 @@ def get_player_points(league, season):
 				if (playerTeam == 'totals'):
 					playerTeam = 'multiple'
 
-				idsArray.append(playerId)
+				playerIds.append(playerId)
 				resultsArray.append([
 					playerStats[NAME].a.text,
 					playerStats[NAME].font.text.strip()[1:-1],
@@ -83,7 +83,12 @@ def get_player_points(league, season):
 		for resultRow in resultsArray:
 			csvWriter.writerow(resultRow)
 
-	print("done")
+	print("Scraping completed successfully.")
+
+""" HELPER FUNCTIONS """
+
+def get_player_id(player):
+	return player[ID].text + player[NAME].a.text
 
 """ MAIN """
 
