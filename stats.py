@@ -41,39 +41,35 @@ def get_player_points(league, season, results_array=None):
         players = player_table.find_all('tr')
 
         for playerIndex in range(0, len(players)):
-            """ Discard the title row """
-            if playerIndex == 0:
+            player = players[playerIndex]
+            player_stats = player.find_all('td')
+
+            """ Only add to the array if the row isn't blank """
+            if player_stats[NAME].a is None or '-' in player_stats[GOALS]:
                 continue
-            else:
-                player = players[playerIndex]
-                player_stats = player.find_all('td')
 
-                """ Only add to the array if the row isn't blank """
-                if player_stats[NAME].a is None or '-' in player_stats[GOALS]:
-                    continue
+            player_id = helpers.get_player_id(player_stats)
+            if player_id in player_ids:
+                done = True
+                break
 
-                player_id = helpers.get_player_id(player_stats)
-                if player_id in player_ids:
-                    done = True
-                    break
+            player_team = player_stats[TEAM].text
+            if player_team == 'totals':
+                player_team = 'multiple'
 
-                player_team = player_stats[TEAM].text
-                if player_team == 'totals':
-                    player_team = 'multiple'
-
-                player_ids.append(player_id)
-                results_array.append([
-                    player_stats[NAME].a.text,
-                    player_stats[NAME].font.text.strip()[1:-1],
-                    season,
-                    league,
-                    player_team,
-                    player_stats[GAMES].text,
-                    player_stats[GOALS].text,
-                    player_stats[ASSISTS].text,
-                    player_stats[POINTS].text,
-                    player_stats[PIM].text,
-                    player_stats[PLUSMINUS].text])
+            player_ids.append(player_id)
+            results_array.append([
+                player_stats[NAME].a.text,
+                player_stats[NAME].font.text.strip()[1:-1],
+                season,
+                league,
+                player_team,
+                player_stats[GAMES].text,
+                player_stats[GOALS].text,
+                player_stats[ASSISTS].text,
+                player_stats[POINTS].text,
+                player_stats[PIM].text,
+                player_stats[PLUSMINUS].text])
 
         page_index += 1
 
