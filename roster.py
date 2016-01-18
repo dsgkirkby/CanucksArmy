@@ -82,6 +82,7 @@ def get_player_rosters(league, season):
 
         team_name = team_page.find(team_name_tag).text
 
+        """ Row 0 is the title row """
         for playerIndex in range(1, len(players)):
             player = players[playerIndex]
             player_stats = player.find_all('td')

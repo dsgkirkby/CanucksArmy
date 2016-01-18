@@ -40,6 +40,7 @@ def get_player_points(league, season, results_array=None):
 
         players = player_table.find_all('tr')
 
+        """ Row 0 is the title row """
         for playerIndex in range(1, len(players)):
             player = players[playerIndex]
             player_stats = player.find_all('td')
