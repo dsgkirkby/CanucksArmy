@@ -13,3 +13,7 @@ def export_array_to_csv(array, name):
         csv_writer = csv.writer(csvFile)
         for resultRow in array:
             csv_writer.writerow(resultRow)
+
+
+def comma_delimited_list(string):
+    return string.split(',')

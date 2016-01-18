@@ -17,7 +17,7 @@ PLUSMINUS = 9
 """ PLAYER STAT PARSER """
 
 
-def get_player_points(league, season, results_array=None):
+def get_player_stats(league, season, results_array=None):
     league = str(league)
 
     if results_array is None:
@@ -75,18 +75,3 @@ def get_player_points(league, season, results_array=None):
         page_index += 1
 
     return results_array
-
-
-""" MAIN """
-
-
-def main():
-    if len(sys.argv) < 3:
-        print("Usage: expects 2 arguments - name of league (i.e. 'QMJHL') and season (start year only, i.e. '2015' for 2014-15)")
-        return
-    league = sys.argv[1]
-    season = sys.argv[2]
-    helpers.export_array_to_csv(get_player_points(league, season), '{0}-{1}-stats.csv'.format(league, season))
-
-
-main()

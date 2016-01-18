@@ -19,11 +19,12 @@ IMPERIAL = 1
 """ ROSTER PARSER """
 
 
-def get_player_rosters(league, season):
+def get_player_rosters(league, season, results_array=None):
     league = str(league)
     season = str(season)
 
-    results_array = [['Name', 'Position', 'Season', 'League', 'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots']]
+    if results_array is None:
+        results_array = [['Name', 'Position', 'Season', 'League', 'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots']]
     player_ids = []
 
     """ Get the league link """
@@ -109,18 +110,3 @@ def get_player_rosters(league, season):
                 player_stats[SHOOTS].text])
 
     return results_array
-
-
-""" MAIN """
-
-
-def main():
-    if len(sys.argv) < 3:
-        print("Usage: expects 2 arguments - name of league (i.e. 'QMJHL') and season (end year only, i.e. '2015' for 2014-15)")
-        return
-    league = sys.argv[1]
-    season = sys.argv[2]
-    helpers.export_array_to_csv(get_player_rosters(league, season), '{0}-{1}-rosters.csv'.format(league, season))
-
-
-main()
