@@ -1,13 +1,14 @@
 #!/usr/bin/python
 
-__author__ = 'dylan'
-
 import requests
 import re
 import sys
 import csv
 import html5lib
+import helpers
 from bs4 import BeautifulSoup
+
+__author__ = 'dylan'
 
 ID = 0
 NAME = 1
@@ -101,7 +102,7 @@ def get_player_rosters(league, season):
                 if playerStats[ID].font is not None:
                     continue
 
-                playerId = get_player_id(playerStats)
+                playerId = helpers.get_player_id(playerStats)
                 if playerId in playerIds:
                     break
 
@@ -126,20 +127,12 @@ def get_player_rosters(league, season):
     print("Scraping completed successfully.")
 
 
-""" HELPER FUNCTIONS """
-
-
-def get_player_id(player):
-    return player[ID].text + player[NAME].a.text
-
-
 """ MAIN """
 
 
 def main():
     if len(sys.argv) < 3:
-        print(
-            "Usage: expects 2 arguments - name of league (i.e. 'QMJHL') and season (end year only, i.e. '2015' for 2014-15)")
+        print("Usage: expects 2 arguments - name of league (i.e. 'QMJHL') and season (end year only, i.e. '2015' for 2014-15)")
         return
     get_player_rosters(sys.argv[1], sys.argv[2])
 
