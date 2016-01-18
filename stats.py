@@ -40,11 +40,11 @@ def get_player_points(league, season, results_array=None):
 
         players = player_table.find_all('tr')
 
-        for playerIndex in range(0, len(players)):
+        for playerIndex in range(1, len(players)):
             player = players[playerIndex]
             player_stats = player.find_all('td')
 
-            """ Only add to the array if the row isn't blank and isn't the title row """
+            """ Only add to the array if the row isn't blank """
             if player_stats[NAME].a is None or '-' in player_stats[GOALS]:
                 continue
 

@@ -82,34 +82,30 @@ def get_player_rosters(league, season):
 
         team_name = team_page.find(team_name_tag).text
 
-        for playerIndex in range(0, len(players)):
-            """ Discard the title row """
-            if playerIndex == 0:
+        for playerIndex in range(1, len(players)):
+            player = players[playerIndex]
+            player_stats = player.find_all('td')
+
+            """ Only add to the array if the row isn't blank """
+            if player_stats[ID].font is not None:
                 continue
-            else:
-                player = players[playerIndex]
-                player_stats = player.find_all('td')
 
-                """ Only add to the array if the row isn't blank """
-                if player_stats[ID].font is not None:
-                    continue
+            player_id = helpers.get_player_id(player_stats)
+            if player_id in player_ids:
+                break
 
-                player_id = helpers.get_player_id(player_stats)
-                if player_id in player_ids:
-                    break
-
-                player_ids.append(player_id)
-                results_array.append([
-                    player_stats[NAME].a.text,
-                    player_stats[NAME].font.text.strip()[1:-1],
-                    season,
-                    league,
-                    team_name,
-                    player_stats[DOB].text,
-                    player_stats[HOMETOWN].a.text,
-                    player_stats[HEIGHT].find_all('span')[METRIC].text,
-                    player_stats[WEIGHT].find_all('span')[METRIC].text,
-                    player_stats[SHOOTS].text])
+            player_ids.append(player_id)
+            results_array.append([
+                player_stats[NAME].a.text,
+                player_stats[NAME].font.text.strip()[1:-1],
+                season,
+                league,
+                team_name,
+                player_stats[DOB].text,
+                player_stats[HOMETOWN].a.text,
+                player_stats[HEIGHT].find_all('span')[METRIC].text,
+                player_stats[WEIGHT].find_all('span')[METRIC].text,
+                player_stats[SHOOTS].text])
 
     return results_array
 
