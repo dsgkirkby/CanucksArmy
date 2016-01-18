@@ -1,6 +1,15 @@
+import csv
+
 ID = 0
 NAME = 1
 
 
 def get_player_id(player):
     return player[ID].text + player[NAME].a.text
+
+
+def export_array_to_csv(array, name):
+    with open(name, 'w', newline='') as csvFile:
+        csv_writer = csv.writer(csvFile)
+        for resultRow in array:
+            csv_writer.writerow(resultRow)
