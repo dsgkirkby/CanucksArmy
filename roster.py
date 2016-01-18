@@ -27,7 +27,7 @@ def get_player_rosters(league, season):
     league = str(league)
     season = str(season)
 
-    resultsArray = [['Name', 'Position', 'Season', 'League', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots']]
+    resultsArray = [['Name', 'Position', 'Season', 'League', 'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots']]
     playerIds = []
 
     """ Get the league link """
@@ -80,9 +80,14 @@ def get_player_rosters(league, season):
         def global_nav(tag):
             return tag.has_attr('id') and tag.attrs['id'] == 'globalnav'
 
+        def team_name(tag):
+            return tag.has_attr('id') and tag.attrs['id'] == 'fontHeader'
+
         playerTable = teamPage.find(global_nav).next_sibling
 
         players = playerTable.find_all('tr')
+
+        teamName = teamPage.find(team_name).text
 
         for playerIndex in range(0, len(players)):
             """ Discard the title row """
@@ -106,6 +111,7 @@ def get_player_rosters(league, season):
                     playerStats[NAME].font.text.strip()[1:-1],
                     season,
                     league,
+                    teamName,
                     playerStats[DOB].text,
                     playerStats[HOMETOWN].a.text,
                     playerStats[HEIGHT].find_all('span')[METRIC].text,
