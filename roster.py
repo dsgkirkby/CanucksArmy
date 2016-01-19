@@ -102,6 +102,8 @@ def get_player_rosters(league, season, results_array=None):
 
             player_id = name + dob + hometown
             if player_id in player_ids:
+                index = player_ids.index(player_id)
+                results_array[index][4] = 'multiple'
                 continue
 
             player_ids.append(player_id)
