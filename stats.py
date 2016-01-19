@@ -1,7 +1,5 @@
 import requests
 import re
-import sys
-import helpers
 from bs4 import BeautifulSoup
 
 ID = 0

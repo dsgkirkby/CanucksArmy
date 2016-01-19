@@ -1,8 +1,6 @@
 import requests
 import re
-import sys
 import html5lib
-import helpers
 from bs4 import BeautifulSoup
 
 ID = 0
