@@ -35,5 +35,7 @@ def main():
 
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_stats.csv'.format(start_season, end_season, '-'.join(args.leagues)))
 
+    print("Success!")
+
 
 main()

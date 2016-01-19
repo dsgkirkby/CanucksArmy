@@ -49,7 +49,7 @@ def get_player_stats(league, season, results_array=None):
             if player_stats[NAME].a is None or '-' in player_stats[GOALS]:
                 continue
 
-            player_id = helpers.get_player_id(player_stats)
+            player_id = player_stats[NAME].text + player_stats[ID].text
             if player_id in player_ids:
                 done = True
                 break

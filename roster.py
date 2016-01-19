@@ -92,21 +92,30 @@ def get_player_rosters(league, season, results_array=None):
             if player_stats[ID].font is not None:
                 continue
 
-            player_id = helpers.get_player_id(player_stats)
+            name = player_stats[NAME].a.text.strip()
+            position = player_stats[NAME].font.text.strip()[1:-1]
+            dob = player_stats[DOB].text.strip()
+            hometown = player_stats[HOMETOWN].a.text.strip()
+            height = player_stats[HEIGHT].find_all('span')[METRIC].text
+            weight = player_stats[WEIGHT].find_all('span')[METRIC].text
+            shoots = player_stats[SHOOTS].text
+
+            player_id = name + dob + hometown
             if player_id in player_ids:
-                break
+                continue
 
             player_ids.append(player_id)
             results_array.append([
-                player_stats[NAME].a.text,
-                player_stats[NAME].font.text.strip()[1:-1],
+                name,
+                position,
                 season,
                 league,
                 team_name,
-                player_stats[DOB].text,
-                player_stats[HOMETOWN].a.text,
-                player_stats[HEIGHT].find_all('span')[METRIC].text,
-                player_stats[WEIGHT].find_all('span')[METRIC].text,
-                player_stats[SHOOTS].text])
+                dob,
+                hometown,
+                height,
+                weight,
+                shoots
+            ])
 
     return results_array
