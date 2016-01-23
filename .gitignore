@@ -58,3 +58,6 @@ target/
 
 #PyCharm
 .idea/
+
+#Exclude csv files that are output by the app
+*.csv
