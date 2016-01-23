@@ -21,8 +21,8 @@ def get_player_rosters(league, season, results_array=None):
     league = str(league)
     season = str(season)
 
-    if results_array is None:
-        results_array = [['Name', 'Position', 'Season', 'League', 'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots']]
+    if results_array is None or len(results_array) == 0:
+        results_array.append(['Name', 'Position', 'Season', 'League', 'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots'])
     player_ids = []
 
     """ Get the league link """

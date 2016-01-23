@@ -18,8 +18,8 @@ PLUSMINUS = 9
 def get_player_stats(league, season, results_array=None):
     league = str(league)
 
-    if results_array is None:
-        results_array = [['Name', 'Position', 'Season', 'League', 'Team', 'GP', 'G', 'A', 'TP', 'PIM', '+/-']]
+    if results_array is None or len(results_array) == 0:
+        results_array.append(['Name', 'Position', 'Season', 'League', 'Team', 'GP', 'G', 'A', 'TP', 'PIM', '+/-'])
 
     player_ids = []
     page_index = 1
