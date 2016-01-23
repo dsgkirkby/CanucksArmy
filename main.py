@@ -1,7 +1,8 @@
 import argparse
-import helpers
-import roster
-import stats
+
+from modules import helpers
+from modules import stats
+from modules import roster
 
 
 def main():
