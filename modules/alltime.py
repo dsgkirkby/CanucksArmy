@@ -16,7 +16,7 @@ def get_all_time_stats(league, results_array=[]):
     league = str(league)
 
     if results_array is None or len(results_array) == 0:
-        results_array.append(['Name', 'Position', 'League', 'Team', 'GP', 'G', 'A', 'TP'])
+        results_array.append(['Name', 'Position', 'League', 'GP', 'G', 'A', 'TP'])
 
     player_ids = []
     page_index = 1
