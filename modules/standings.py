@@ -32,7 +32,7 @@ def get_league_standings(league, season, results_array=None):
     league_search_page = league_search_request.text.replace('<br>', '<br/>')
     league_search_page = BeautifulSoup(league_search_page, "html.parser")
     league_url = league_search_page.find(league_link_tag)
-    
+
     if league_url is None:
         print("Invalid league name: {0}".format(league))
         return results_array
