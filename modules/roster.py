@@ -40,6 +40,10 @@ def get_player_rosters(league, season, results_array=None):
     league_search_page = BeautifulSoup(league_search_page, "html.parser")
     league_url = league_search_page.find(league_link_tag)
 
+    if league_url is None:
+        print("Invalid league name: {0}".format(league))
+        return results_array
+
     """ Get the teams' links """
 
     team_search_url = "http://www.eliteprospects.com/" + league_url.attrs['href'] + "&startdate=" + str(int(season) - 1)
