@@ -22,7 +22,11 @@ def main():
 
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
-                roster.get_player_rosters(league, season, results_array)
+                try:
+                    roster.get_player_rosters(league, season, results_array)
+                except Exception as e:
+                    print('Error in {0} {1}'.format(league, season))
+                    print(e)
 
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_rosters.csv'.format(start_season, end_season, '-'.join(args.leagues)))
 
@@ -31,7 +35,11 @@ def main():
 
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
-                stats.get_player_stats(league, season, results_array)
+                try:
+                    stats.get_player_stats(league, season, results_array)
+                except Exception as e:
+                    print('Error in {0} {1}'.format(league, season))
+                    print(e)
 
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_stats.csv'.format(start_season, end_season, '-'.join(args.leagues)))
 

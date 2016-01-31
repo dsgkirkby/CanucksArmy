@@ -16,6 +16,8 @@ def export_array_to_csv(array, name):
                     .replace(u'\x9E', u'\u017E')\
                     .replace(u'\u010d', 'c')\
                     .replace(u'\u013d', 'L')\
+                    .replace(u'\u013e', 'l')\
+                    .replace(u'\u0159', 'r')\
                     .replace(u'\x9a', 's')
             try:
                 csv_writer.writerow(resultRow)
