@@ -94,13 +94,16 @@ def get_player_rosters(league, season, results_array=None):
             if player_stats[ID].font is not None:
                 continue
 
-            name = player_stats[NAME].a.text.strip()
-            position = player_stats[NAME].font.text.strip()[1:-1]
-            dob = player_stats[DOB].text.strip()
-            hometown = player_stats[HOMETOWN].a.text.strip()
-            height = player_stats[HEIGHT].find_all('span')[METRIC].text
-            weight = player_stats[WEIGHT].find_all('span')[METRIC].text
-            shoots = player_stats[SHOOTS].text
+            try:
+                name = player_stats[NAME].a.text.strip()
+                position = player_stats[NAME].font.text.strip()[1:-1]
+                dob = player_stats[DOB].text.strip()
+                hometown = player_stats[HOMETOWN].a.text.strip()
+                height = player_stats[HEIGHT].find_all('span')[METRIC].text
+                weight = player_stats[WEIGHT].find_all('span')[METRIC].text
+                shoots = player_stats[SHOOTS].text
+            except IndexError:
+                continue
 
             player_id = name + dob + hometown
             if player_id in player_ids:
