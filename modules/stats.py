@@ -12,13 +12,11 @@ POINTS = 6
 PIM = 8
 PLUSMINUS = 9
 
-""" PLAYER STAT PARSER """
 
-
-def get_player_stats(league, season, results_array=None):
+def get_player_stats(league, season, results_array):
     league = str(league)
 
-    if results_array is None or len(results_array) == 0:
+    if len(results_array) == 0:
         results_array.append(['Name', 'Position', 'Season', 'League', 'Team', 'GP', 'G', 'A', 'TP', 'PIM', '+/-'])
 
     player_ids = []
@@ -38,37 +36,50 @@ def get_player_stats(league, season, results_array=None):
 
         players = player_table.find_all('tr')
 
-        """ Row 0 is the title row """
+        # Row 0 is the title row
         for playerIndex in range(1, len(players)):
             player = players[playerIndex]
             player_stats = player.find_all('td')
 
-            """ Only add to the array if the row isn't blank """
-            if player_stats[NAME].a is None or '-' in player_stats[GOALS]:
+            # Only add to the array if the row isn't blank
+            if player_stats[TEAM].text.strip() == '' or '-' in player_stats[GOALS]:
                 continue
 
-            player_id = player_stats[NAME].text + player_stats[ID].text
+            player_id = player_stats[NAME].text + player_stats[ID].text + player_stats[TEAM].text
             if player_id in player_ids:
                 done = True
                 break
 
-            player_team = player_stats[TEAM].text
-            if player_team == 'totals':
-                player_team = 'multiple'
+            # if there is no value, use the old one
+            if player_stats[NAME].a is not None:
+                name = player_stats[NAME].a.text
+                position = player_stats[NAME].font.text.strip()[1:-1]
+
+            team = player_stats[TEAM].text
+            games = player_stats[GAMES].text
+            goals = player_stats[GOALS].text
+            assists = player_stats[ASSISTS].text
+            points = player_stats[POINTS].text
+            pim = player_stats[PIM].text
+            plusminus = player_stats[PLUSMINUS].text
+
+            if team == 'totals':
+                team = 'multiple'
 
             player_ids.append(player_id)
             results_array.append([
-                player_stats[NAME].a.text,
-                player_stats[NAME].font.text.strip()[1:-1],
+                name,
+                position,
                 season,
                 league,
-                player_team,
-                player_stats[GAMES].text,
-                player_stats[GOALS].text,
-                player_stats[ASSISTS].text,
-                player_stats[POINTS].text,
-                player_stats[PIM].text,
-                player_stats[PLUSMINUS].text])
+                team,
+                games,
+                goals,
+                assists,
+                points,
+                pim,
+                plusminus
+            ])
 
         page_index += 1
 
