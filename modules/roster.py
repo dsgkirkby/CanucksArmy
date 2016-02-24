@@ -27,26 +27,31 @@ def get_player_rosters(league, season, results_array=None):
 
     """ Get the league link """
 
-    league_search_url = "http://www.eliteprospects.com/league_central.php"
-    league_search_request = requests.get(league_search_url)
+    try:
+        int(league)
+        team_search_url = "http://www.eliteprospects.com/league_home.php?leagueid=" + league + "&startdate=" + str(int(season) - 1)
+    except ValueError:
+        league_search_url = "http://www.eliteprospects.com/league_central.php"
+        league_search_request = requests.get(league_search_url)
 
-    """ Find an <a> tag with the league name in its text """
+        """ Find an <a> tag with the league name in its text """
 
-    def league_link_tag(tag):
-        return tag.name == 'a' and tag.text.strip().lower() == league.lower() and len(
-            re.findall('league_home.php', tag.attrs['href'], re.IGNORECASE)) > 0
+        def league_link_tag(tag):
+            return tag.name == 'a' and tag.text.strip().lower() == league.lower() and len(
+                re.findall('league_home.php', tag.attrs['href'], re.IGNORECASE)) > 0
 
-    league_search_page = league_search_request.text.replace('<br>', '<br/>')
-    league_search_page = BeautifulSoup(league_search_page, "html.parser")
-    league_url = league_search_page.find(league_link_tag)
+        league_search_page = league_search_request.text.replace('<br>', '<br/>')
+        league_search_page = BeautifulSoup(league_search_page, "html.parser")
+        league_url = league_search_page.find(league_link_tag)
 
-    if league_url is None:
-        print("Invalid league name: {0}".format(league))
-        return results_array
+        if league_url is None:
+            print("Invalid league name: {0}".format(league))
+            return results_array
 
-    """ Get the teams' links """
+        """ Get the teams' links """
 
-    team_search_url = "http://www.eliteprospects.com/" + league_url.attrs['href'] + "&startdate=" + str(int(season) - 1)
+        team_search_url = "http://www.eliteprospects.com/" + league_url.attrs['href'] + "&startdate=" + str(int(season) - 1)
+
     team_search_request = requests.get(team_search_url)
 
     # All tag names have this prepended to them
@@ -79,7 +84,7 @@ def get_player_rosters(league, season, results_array=None):
         def team_name_tag(tag):
             return tag.has_attr('id') and tag.attrs['id'] == 'fontHeader'
 
-        player_table = team_page.find(global_nav_tag).next_sibling
+        player_table = team_page.find(global_nav_tag).find_next_sibling('table')
 
         players = player_table.find_all('tr')
 
