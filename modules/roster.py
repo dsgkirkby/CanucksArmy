@@ -24,45 +24,36 @@ def get_player_rosters(league, season, results_array=None):
     if results_array is None or len(results_array) == 0:
         results_array.append(['Name', 'Position', 'Season', 'League', 'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots'])
     player_ids = []
+    team_urls = []
 
     """ Get the league link """
 
     try:
         int(league)
         team_search_url = "http://www.eliteprospects.com/league_home.php?leagueid=" + league + "&startdate=" + str(int(season) - 1)
+
+        team_search_request = requests.get(team_search_url)
+
+        # All tag names have this prepended to them
+        html_prefix = '{http://www.w3.org/1999/xhtml}'
+        team_search_page = html5lib.parse(team_search_request.text)
+        # xpath: /html/body/div[2]/table[3]/tbody/tr/td[5]/table[5]
+        team_table = team_search_page.find(
+            './{0}body/{0}div[2]/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[5]'.format(html_prefix))
+
+        teams = team_table.findall('.//{0}tbody/{0}tr/{0}td[2]/{0}a'.format(html_prefix))
     except ValueError:
-        league_search_url = "http://www.eliteprospects.com/league_central.php"
-        league_search_request = requests.get(league_search_url)
+        team_search_url = "http://www.eliteprospects.com/standings.php?league={0}&startdate={1}".format(league, str(int(season) - 1))
+        team_search_request = requests.get(team_search_url)
 
-        """ Find an <a> tag with the league name in its text """
+        # All tag names have this prepended to them
+        html_prefix = '{http://www.w3.org/1999/xhtml}'
+        team_search_page = html5lib.parse(team_search_request.text)
+        # /html/body/div/table[3]/tbody/tr/td[5]/table[3]
+        team_table = team_search_page.find(
+            './{0}body/{0}div/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[3]'.format(html_prefix))
 
-        def league_link_tag(tag):
-            return tag.name == 'a' and tag.text.strip().lower() == league.lower() and len(
-                re.findall('league_home.php', tag.attrs['href'], re.IGNORECASE)) > 0
-
-        league_search_page = league_search_request.text.replace('<br>', '<br/>')
-        league_search_page = BeautifulSoup(league_search_page, "html.parser")
-        league_url = league_search_page.find(league_link_tag)
-
-        if league_url is None:
-            print("Invalid league name: {0}".format(league))
-            return results_array
-
-        """ Get the teams' links """
-
-        team_search_url = "http://www.eliteprospects.com/" + league_url.attrs['href'] + "&startdate=" + str(int(season) - 1)
-
-    team_search_request = requests.get(team_search_url)
-
-    # All tag names have this prepended to them
-    html_prefix = '{http://www.w3.org/1999/xhtml}'
-    team_search_page = html5lib.parse(team_search_request.text)
-    # xpath: /html/body/div[2]/table[3]/tbody/tr/td[5]/table[5]
-    team_table = team_search_page.find(
-        './{0}body/{0}div[2]/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[5]'.format(html_prefix))
-
-    teams = team_table.findall('.//{0}tbody/{0}tr/{0}td[2]/{0}a'.format(html_prefix))
-    team_urls = []
+        teams = team_table.findall('.//{0}tbody/{0}tr/{0}td[2]/{0}a'.format(html_prefix))
 
     on_first_row = True
 
