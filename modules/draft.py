@@ -44,12 +44,17 @@ def get_draft_picks(season, results_array=None):
                 round_number += 1
             continue
 
+        try:
+            name = columns[NAME].find('{0}a'.format(html_prefix)).text.strip()
+        except AttributeError:
+            name = columns[NAME].text
+
         results_array.append([
             season,
             round_number,
             pick_number,
             columns[TEAM].text,
-            columns[NAME].find('{0}a'.format(html_prefix)).text.strip(),
+            name,
             columns[SEASONS].text,
             columns[GAMES].text or '',
             columns[GOALS].text or '',
