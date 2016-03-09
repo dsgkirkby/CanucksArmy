@@ -13,8 +13,11 @@ PIM = 8
 PLUSMINUS = 9
 
 
-def get_player_stats(league, season, results_array):
+def get_player_stats(league, season, results_array, show_multiple_teams=False):
     league = str(league)
+
+    if results_array is None:
+        results_array = []
 
     if len(results_array) == 0:
         results_array.append(['Name', 'Position', 'Season', 'League', 'Team', 'GP', 'G', 'A', 'TP', 'PIM', '+/-'])
@@ -41,11 +44,16 @@ def get_player_stats(league, season, results_array):
             player = players[playerIndex]
             player_stats = player.find_all('td')
 
+            if show_multiple_teams:
+                skip_row = player_stats[TEAM].text.strip() == ''
+            else:
+                skip_row = player_stats[NAME].a is None
+
             # Only add to the array if the row isn't blank
-            if player_stats[TEAM].text.strip() == '' or '-' in player_stats[GOALS]:
+            if skip_row or '-' in player_stats[GOALS]:
                 continue
 
-            player_id = player_stats[NAME].text + player_stats[ID].text + player_stats[TEAM].text
+            player_id = player_stats[NAME].text + player_stats[ID].text + (player_stats[TEAM].text if show_multiple_teams else '')
             if player_id in player_ids:
                 done = True
                 break
