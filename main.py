@@ -8,6 +8,7 @@ def main():
     arg_parser.add_argument('--roster', action='store_true', help="Output roster list for the given league(s) and season(s)")
     arg_parser.add_argument('--stats', action='store_true', help="Output stats list for the given league(s) and season(s)")
     arg_parser.add_argument('--standings', action='store_true', help="All teams in league, with goals for/against")
+    arg_parser.add_argument('--multiple_teams', action='store_true', help="Whether to show all teams a player has played for")
     arg_parser.add_argument('leagues', type=helpers.comma_delimited_list, help="Comma-delimited list (no spaces) of leagues")
     arg_parser.add_argument('start_season', type=int, help="Earliest season for which to scrape data. Second year of the season (i.e. passing 2014 refers to the 2013-14 season)")
     arg_parser.add_argument('--range', type=int, help="Choose the latest season to parse to parse many seasons at once. Second year of the season (i.e. passing 2014 refers to the 2013-14 season)", required=False)
@@ -16,6 +17,7 @@ def main():
 
     start_season = args.start_season
     end_season = args.range if args.range is not None else args.start_season
+    multiple_teams = args.multiple_teams
 
     if args.roster:
         results_array = []
@@ -36,7 +38,7 @@ def main():
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
                 try:
-                    stats.get_player_stats(league, season, results_array)
+                    stats.get_player_stats(league, season, results_array, multiple_teams)
                 except Exception as e:
                     print('Error in {0} {1}'.format(league, season))
                     print(e)
