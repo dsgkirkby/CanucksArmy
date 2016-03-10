@@ -72,7 +72,10 @@ def get_player_stats(league, season, results_array, show_multiple_teams=False):
             plusminus = player_stats[PLUSMINUS].text
 
             if team == 'totals':
-                team = 'multiple'
+                if show_multiple_teams:
+                    continue
+                else:
+                    team = 'multiple'
 
             player_ids.append(player_id)
             results_array.append([
