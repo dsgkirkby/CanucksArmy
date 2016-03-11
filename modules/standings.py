@@ -45,11 +45,18 @@ def get_league_standings(league, season, results_array=None):
     # All tag names have this prepended to them
     html_prefix = '{http://www.w3.org/1999/xhtml}'
     team_search_page = html5lib.parse(team_search_request.text)
-    # xpath: /html/body/div[2]/table[3]/tbody/tr/td[5]/table[5]
+    # xpath: /html/body/div[2]/table[3]/tbody/tr/td[5]/table[4]
     team_table = team_search_page.find(
-        './{0}body/{0}div[2]/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[5]'.format(html_prefix))
+        './{0}body/{0}div[2]/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[4]'.format(html_prefix))
 
     teams = team_table.findall('.//{0}tbody/{0}tr'.format(html_prefix))
+
+    if len(teams) < 30:
+        # xpath: /html/body/div[2]/table[3]/tbody/tr/td[5]/table[5]
+        team_table = team_search_page.find(
+            './{0}body/{0}div[2]/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[5]'.format(html_prefix))
+
+        teams = team_table.findall('.//{0}tbody/{0}tr'.format(html_prefix))
 
     """ Parse the team standings table """
 
