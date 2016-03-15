@@ -53,15 +53,16 @@ def get_player_stats(league, season, results_array, show_multiple_teams=False):
             if skip_row or '-' in player_stats[GOALS]:
                 continue
 
-            player_id = player_stats[NAME].text + player_stats[ID].text + (player_stats[TEAM].text if show_multiple_teams else '')
-            if player_id in player_ids:
-                done = True
-                break
-
             # if there is no value, use the old one
             if player_stats[NAME].a is not None:
                 name = player_stats[NAME].a.text
                 position = player_stats[NAME].font.text.strip()[1:-1]
+                player_rank = player_stats[ID].text
+
+            player_id = name + player_rank + (player_stats[TEAM].text if show_multiple_teams else '')
+            if player_id in player_ids:
+                done = True
+                break
 
             team = player_stats[TEAM].text
             games = player_stats[GAMES].text
