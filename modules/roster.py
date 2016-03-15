@@ -57,9 +57,17 @@ def get_player_rosters(league, season, results_array=None):
     # All tag names have this prepended to them
     html_prefix = '{http://www.w3.org/1999/xhtml}'
     team_search_page = html5lib.parse(team_search_request.text)
-    # xpath: /html/body/div[2]/table[3]/tbody/tr/td[5]/table[5]
+
+    # /html/body/div[2]/table[3]/tbody/tr/td[5]/span
+    rosters_table_header = team_search_page.find(
+        './{0}body/{0}div[2]/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}span'.format(html_prefix))
+    if 'TEAM ROSTERS' in rosters_table_header.text.upper():
+        team_table_index = 5
+    else:
+        team_table_index = 4
+    # xpath: /html/body/div[2]/table[3]/tbody/tr/td[5]/table[4/5]
     team_table = team_search_page.find(
-        './{0}body/{0}div[2]/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[5]'.format(html_prefix))
+        './{0}body/{0}div[2]/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[{1}]'.format(html_prefix, str(team_table_index)))
 
     teams = team_table.findall('.//{0}tbody/{0}tr/{0}td[2]/{0}a'.format(html_prefix))
     team_urls = []
