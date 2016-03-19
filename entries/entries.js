@@ -27,6 +27,10 @@ var SHIFTPERIOD = 1;
 var SHIFTSTART = 2;
 var SHIFTEND = 3;
 
+var FILENAME = 'ZoneEntries-TOR.csv';
+var OUTPUTFILENAME = 'entries-2.csv';
+var TEAMNAME = 'TOR';
+
 var getEntries = fileName => {
 	return new Promise((resolve, reject) => {
 		var entries = [];
@@ -85,7 +89,7 @@ var convertTimeToFullDigits = time => {
 	return time;
 }
 
-getEntries('ZoneEntries.csv').then(entries => {
+getEntries(FILENAME).then(entries => {
 	var gameSheets = [];
 	var games = _.each(entries, entry => {
 		if (_.find(entries, entry2 => {
@@ -150,7 +154,7 @@ getEntries('ZoneEntries.csv').then(entries => {
 		var successful = 0;
 
 		entries.forEach(entry => {
-			if (entry[PLAYER].indexOf('FLA') < 0) {
+			if (entry[PLAYER].indexOf(TEAMNAME) < 0) {
 				return;
 			}
 
@@ -163,7 +167,7 @@ getEntries('ZoneEntries.csv').then(entries => {
 					&& shift.end <= time;
 	        });
 
-	        var entererNumber = entry[PLAYER].substr(0, entry[PLAYER].indexOf('FLA'));
+	        var entererNumber = entry[PLAYER].substr(0, entry[PLAYER].indexOf(TEAMNAME));
 
 	        var enterer = players.find(player => {
 	        	return player.name.substr(0, entererNumber.length) === entererNumber ? 1 : 0;
@@ -200,7 +204,7 @@ getEntries('ZoneEntries.csv').then(entries => {
 		}
 
 		var writer = csv_writer();
-		writer.pipe(fs.createWriteStream('entries.csv'));
+		writer.pipe(fs.createWriteStream(OUTPUTFILENAME));
 		output.forEach(line => {
 			writer.write(line);
 		});
