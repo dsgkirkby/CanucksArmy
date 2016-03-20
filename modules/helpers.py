@@ -12,8 +12,8 @@ def export_array_to_csv(array, name):
                 resultRow[index] = str(item)\
                     .replace(u'\u0148', 'n')\
                     .replace(u'\u2010', '-')\
-                    .replace(u'\u0107', 'c')\
                     .replace(u'\x9E', u'\u017E')\
+                    .replace(u'\u0107', 'c')\
                     .replace(u'\u010d', 'c')\
                     .replace(u'\u0441', 'c')\
                     .replace(u'\u013d', 'L')\

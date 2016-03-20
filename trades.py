@@ -1,7 +1,6 @@
 import argparse
 
-from modules import helpers
-from modules import trades
+from modules import helpers, trades
 
 
 def main():
