@@ -28,32 +28,17 @@ def get_player_rosters(league, season, results_array=None):
 
     """ Get the league link """
 
-    try:
-        int(league)
-        team_search_url = "http://www.eliteprospects.com/league_home.php?leagueid=" + league + "&startdate=" + str(int(season) - 1)
+    team_search_url = "http://www.eliteprospects.com/standings.php?league={0}&startdate={1}".format(league, str(int(season) - 1))
+    team_search_request = requests.get(team_search_url)
 
-        team_search_request = requests.get(team_search_url)
+    # All tag names have this prepended to them
+    html_prefix = '{http://www.w3.org/1999/xhtml}'
+    team_search_page = html5lib.parse(team_search_request.text)
+    # /html/body/div/table[3]/tbody/tr/td[5]/table[3]
+    team_table = team_search_page.find(
+        './{0}body/{0}div/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[3]'.format(html_prefix))
 
-        # All tag names have this prepended to them
-        html_prefix = '{http://www.w3.org/1999/xhtml}'
-        team_search_page = html5lib.parse(team_search_request.text)
-        # xpath: /html/body/div[2]/table[3]/tbody/tr/td[5]/table[5]
-        team_table = team_search_page.find(
-            './{0}body/{0}div[2]/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[5]'.format(html_prefix))
-
-        teams = team_table.findall('.//{0}tbody/{0}tr/{0}td[2]/{0}a'.format(html_prefix))
-    except ValueError:
-        team_search_url = "http://www.eliteprospects.com/standings.php?league={0}&startdate={1}".format(league, str(int(season) - 1))
-        team_search_request = requests.get(team_search_url)
-
-        # All tag names have this prepended to them
-        html_prefix = '{http://www.w3.org/1999/xhtml}'
-        team_search_page = html5lib.parse(team_search_request.text)
-        # /html/body/div/table[3]/tbody/tr/td[5]/table[3]
-        team_table = team_search_page.find(
-            './{0}body/{0}div/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[3]'.format(html_prefix))
-
-        teams = team_table.findall('.//{0}tbody/{0}tr/{0}td[2]/{0}a'.format(html_prefix))
+    teams = team_table.findall('.//{0}tbody/{0}tr/{0}td[2]/{0}a'.format(html_prefix))
 
     on_first_row = True
 
