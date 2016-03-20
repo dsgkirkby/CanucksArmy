@@ -25,7 +25,7 @@ def main():
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
                 try:
-                    roster.get_player_rosters(league, season, results_array)
+                    roster.get_player_rosters(league, season, results_array, multiple_teams)
                 except Exception as e:
                     print('Error in {0} {1}'.format(league, season))
                     print(e)

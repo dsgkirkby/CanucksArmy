@@ -17,7 +17,7 @@ IMPERIAL = 1
 """ ROSTER PARSER """
 
 
-def get_player_rosters(league, season, results_array=None):
+def get_player_rosters(league, season, results_array=None, multiple_teams=False):
     league = str(league)
     season = str(season)
 
@@ -86,13 +86,15 @@ def get_player_rosters(league, season, results_array=None):
             except IndexError:
                 continue
 
-            player_id = name + dob + hometown
-            if player_id in player_ids:
-                index = player_ids.index(player_id)
-                results_array[index][4] = 'multiple'
-                continue
+            if not multiple_teams:
+                player_id = name + dob + hometown
+                if player_id in player_ids:
+                    index = player_ids.index(player_id)
+                    results_array[index][4] = 'multiple'
+                    continue
 
-            player_ids.append(player_id)
+                player_ids.append(player_id)
+
             results_array.append([
                 name,
                 position,
