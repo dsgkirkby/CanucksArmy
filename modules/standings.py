@@ -1,12 +1,12 @@
 import requests
-import re
 import html5lib
-from bs4 import BeautifulSoup
+import xml.etree.ElementTree as ElementTree
 
 NAME = 1
 GAMES = 2
 GOALS_FOR = 8
 GOALS_AGAINST = 9
+POSTSEASON = 12
 
 """ ROSTER PARSER """
 
@@ -16,48 +16,19 @@ def get_league_standings(league, season, results_array=None):
     season = str(season)
 
     if results_array is None or len(results_array) == 0:
-        results_array.append(['Team Name', 'League', 'Season', 'Games', 'GF', 'GA'])
+        results_array.append(['Team Name', 'League', 'Season', 'Games', 'GF', 'GA', 'PostSeason'])
 
-    """ Get the league link """
-
-    league_search_url = "http://www.eliteprospects.com/league_central.php"
-    league_search_request = requests.get(league_search_url)
-
-    """ Find an <a> tag with the league name in its text """
-
-    def league_link_tag(tag):
-        return tag.name == 'a' and tag.text.strip().lower() == league.lower() and len(
-            re.findall('league_home.php', tag.attrs['href'], re.IGNORECASE)) > 0
-
-    league_search_page = league_search_request.text.replace('<br>', '<br/>')
-    league_search_page = BeautifulSoup(league_search_page, "html.parser")
-    league_url = league_search_page.find(league_link_tag)
-
-    if league_url is None:
-        print("Invalid league name: {0}".format(league))
-        return results_array
-
-    """ Get the teams' links """
-
-    team_search_url = "http://www.eliteprospects.com/" + league_url.attrs['href'] + "&startdate=" + str(int(season) - 1)
-    team_search_request = requests.get(team_search_url)
+    standings_url = 'http://www.eliteprospects.com/standings.php?league={0}&startdate={1}'.format(league, str(int(season) - 1))
+    request = requests.get(standings_url)
 
     # All tag names have this prepended to them
     html_prefix = '{http://www.w3.org/1999/xhtml}'
-    team_search_page = html5lib.parse(team_search_request.text)
+    standings_page = html5lib.parse(request.text)
 
-    # /html/body/div[2]/table[3]/tbody/tr/td[5]/span
-    rosters_table_header = team_search_page.find(
-        './{0}body/{0}div[2]/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}span'.format(html_prefix))
-    if 'TEAM ROSTERS' in rosters_table_header.text.upper():
-        team_table_index = 5
-    else:
-        team_table_index = 4
-    # xpath: /html/body/div[2]/table[3]/tbody/tr/td[5]/table[4/5]
-    team_table = team_search_page.find(
-        './{0}body/{0}div[2]/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[{1}]'.format(html_prefix, team_table_index))
+    standings_table = standings_page.find(
+        './{0}body/{0}div/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[3]'.format(html_prefix))
 
-    teams = team_table.findall('.//{0}tbody/{0}tr'.format(html_prefix))
+    teams = standings_table.findall('.//{0}tbody/{0}tr'.format(html_prefix))
 
     """ Parse the team standings table """
 
@@ -79,6 +50,7 @@ def get_league_standings(league, season, results_array=None):
         games = team_stats[GAMES].text
         goals_for = team_stats[GOALS_FOR].text
         goals_against = team_stats[GOALS_AGAINST].text
+        postseason = ''.join(team_stats[POSTSEASON].itertext()).strip()
 
         results_array.append([
             name,
@@ -86,7 +58,8 @@ def get_league_standings(league, season, results_array=None):
             season,
             games,
             goals_for,
-            goals_against
+            goals_against,
+            postseason
         ])
 
     return results_array
