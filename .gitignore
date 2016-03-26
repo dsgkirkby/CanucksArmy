@@ -61,3 +61,5 @@ target/
 
 #Exclude csv files that are output by the app
 *.csv
+
+entries/
