@@ -3,6 +3,7 @@ var http = require('http');
 var cheerio = require('cheerio');
 var csv = require('fast-csv');
 var csv_writer = require('csv-write-stream');
+var commandLineArgs = require('command-line-args');
 var _ = require('underscore');
 
 var PERIOD = 'Period';
@@ -27,9 +28,15 @@ var SHIFTPERIOD = 1;
 var SHIFTSTART = 2;
 var SHIFTEND = 3;
 
-var FILENAME = 'ZoneEntries-TOR.csv';
-var OUTPUTFILENAME = 'entries-2.csv';
-var TEAMNAME = 'TOR';
+var cli = commandLineArgs([
+	{name: 'team', type: String, defaultOption: true}
+]);
+
+var options = cli.parse();
+
+var TEAMNAME = options.team;
+var FILENAME = 'ZoneEntries-' + TEAMNAME + '.csv';
+var OUTPUTFILENAME = 'burdens-' + TEAMNAME + '.csv';
 
 var getEntries = fileName => {
 	return new Promise((resolve, reject) => {
@@ -189,6 +196,9 @@ getEntries(FILENAME).then(entries => {
 				}
 			});
 		});
+
+		console.log(failed);
+		console.log(successful);
 
 		var output = []
 
