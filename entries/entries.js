@@ -118,6 +118,7 @@ getEntries(FILENAME).then(entries => {
 	});
 
 	Promise.all(gameSheetPromises).then(data => {
+		try {
 		var shifts = [];
 		var entryBurdens = {};
 
@@ -219,5 +220,8 @@ getEntries(FILENAME).then(entries => {
 			writer.write(line);
 		});
 		writer.end();
+		} catch (e) {
+			console.log(e);
+		}
 	});
 });
