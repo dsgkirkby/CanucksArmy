@@ -8,7 +8,7 @@ var _ = require('underscore');
 
 var PERIOD = 'Period';
 var TIME = 'Time';
-var TYPE = 'Entry Type';
+var TYPE = 'Entry type';
 var PLAYER = 'Player';
 var NOTES = 'Notes';
 var TMSTRENGTH = 'Team strength';
@@ -28,6 +28,21 @@ var SHIFTPERIOD = 1;
 var SHIFTSTART = 2;
 var SHIFTEND = 3;
 
+var STATSPLAYERNAME = 'Player';
+var STATSCORSIP = 'CF%';
+var STATSPLAYERPOSITION = 'Position';
+
+var ENTRYTYPES = {
+	CONTROLLED: 'C',
+	DUMPIN: 'D',
+	FAILED: 'F'
+}
+
+var WEIGHTINGS = {};
+WEIGHTINGS[ENTRYTYPES.CONTROLLED] = 2;
+WEIGHTINGS[ENTRYTYPES.DUMPIN] = 1;
+WEIGHTINGS[ENTRYTYPES.FAILED] = 0;
+
 var cli = commandLineArgs([
 	{name: 'team', type: String, defaultOption: true}
 ]);
@@ -36,18 +51,19 @@ var options = cli.parse();
 
 var TEAMNAME = options.team;
 var FILENAME = 'ZoneEntries-' + TEAMNAME + '.csv';
+var STATSFILE = 'stats-' + TEAMNAME + '.csv';
 var OUTPUTFILENAME = 'burdens-' + TEAMNAME + '.csv';
 
-var getEntries = fileName => {
+var getCsv = fileName => {
 	return new Promise((resolve, reject) => {
-		var entries = [];
+		var csvData = [];
 		fs.createReadStream(fileName)
 			.pipe(csv({
 				headers: true
 			})).on('data', data => {
-				entries.push(data);
+				csvData.push(data);
 			}).on('end', () => {
-				resolve(entries);
+				resolve(csvData);
 			});
 	});
 };
@@ -96,7 +112,29 @@ var convertTimeToFullDigits = time => {
 	return time;
 }
 
-getEntries(FILENAME).then(entries => {
+var getEntrySummary = entries => {
+	var add = (a,b) => a + b;
+
+	var player = 
+		entries[ENTRYTYPES.CONTROLLED].reduce(add) * WEIGHTINGS[ENTRYTYPES.CONTROLLED] +
+		entries[ENTRYTYPES.DUMPIN].reduce(add) * WEIGHTINGS[ENTRYTYPES.DUMPIN] +
+		entries[ENTRYTYPES.FAILED].reduce(add) * WEIGHTINGS[ENTRYTYPES.FAILED];
+	var onIce = 
+		entries[ENTRYTYPES.CONTROLLED].length * WEIGHTINGS[ENTRYTYPES.CONTROLLED] +
+		entries[ENTRYTYPES.DUMPIN].length * WEIGHTINGS[ENTRYTYPES.DUMPIN] +
+		entries[ENTRYTYPES.FAILED].length * WEIGHTINGS[ENTRYTYPES.FAILED];
+	var burden = (player / onIce * 100).toFixed(2) + '%'
+	return {
+		player: player,
+		onIce: onIce,
+		burden: burden
+	}
+}
+
+Promise.all([getCsv(FILENAME), getCsv(STATSFILE)]).then(data => {
+	var entries = data[0];
+	var stats = data[1];
+
 	var gameSheets = [];
 	var games = _.each(entries, entry => {
 		if (_.find(entries, entry2 => {
@@ -188,29 +226,46 @@ getEntries(FILENAME).then(entries => {
 	        	successful++;
 	        }
 
+	        var entryType = entry[TYPE];
+
 			players.forEach(player => {
 				var playerDidEntry = player === enterer;
-				if (entryBurdens[player.name]) {
-					entryBurdens[player.name].push(playerDidEntry);
-				} else {
-					entryBurdens[player.name] = [playerDidEntry];
+				if (!entryBurdens[player.name]) {
+					entryBurdens[player.name] = {};
 				}
+
+				if (!entryBurdens[player.name][entryType]) {
+					entryBurdens[player.name][entryType] = [];
+				}
+
+				entryBurdens[player.name][entryType].push(playerDidEntry ? 1 : 0);
 			});
 		});
 
-		console.log(failed);
-		console.log(successful);
-
 		var output = []
 
-		for (var entryBurden in entryBurdens) {
-			var playerEntries = entryBurdens[entryBurden].reduce((a, b) => a + b);
-			var totalEntries = entryBurdens[entryBurden].length;
+		for (var playerName in entryBurdens) {
+			var playerLastName = playerName.substring(playerName.indexOf(' ') + 1, playerName.indexOf(',')).toUpperCase();
+
+			var entryBurden = entryBurdens[playerName];
+			var summary = getEntrySummary(entryBurden);
+
+			var playerStats = _.find(stats, statsLine => {
+				var name = statsLine[STATSPLAYERNAME];
+				return name.trim().endsWith(playerLastName);
+			});
+
+			if (!playerStats) {
+				continue;
+			}
+
 			output.push({
-				'Player Name': entryBurden,
-				'Player Entries': playerEntries,
-				'On Ice Total': totalEntries,
-				'Success Percentage': (playerEntries / totalEntries * 100).toFixed(2) + '%'
+				'Player Name': playerName,
+				'Player Position': playerStats[STATSPLAYERPOSITION],
+				'Player Entries': summary.player,
+				'On Ice Total': summary.onIce,
+				'Burden Percentage': summary.burden,
+				'Player CF%': playerStats[STATSCORSIP]
 			});
 		}
 
