@@ -63,3 +63,5 @@ target/
 *.csv
 
 entries/
+
+node_modules
