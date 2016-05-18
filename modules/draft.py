@@ -17,7 +17,7 @@ def get_draft_picks(season, results_array=None):
     if results_array is None:
         results_array = []
     if len(results_array) == 0:
-        results_array.append(['Year', 'Round', 'Number', 'Team', 'Name', 'Seasons', 'Games', 'Goals', 'Assists', 'Points', 'PIM'])
+        results_array.append(['Year', 'Round', 'Number', 'Team', 'Name', 'Position', 'Seasons', 'Games', 'Goals', 'Assists', 'Points', 'PIM'])
 
     url = 'http://www.eliteprospects.com/draft.php?year={0}'.format(str(season))
     r = requests.get(url)
@@ -45,9 +45,12 @@ def get_draft_picks(season, results_array=None):
             continue
 
         try:
-            name = columns[NAME].find('{0}a'.format(html_prefix)).text.strip()
+            name_link = columns[NAME].find('{0}a'.format(html_prefix))
+            name = name_link.text.strip()
+            position = name_link.find('{0}font'.format(html_prefix)).text.strip()[1:-1]
         except AttributeError:
-            name = columns[NAME].text
+            name = 'No selection made'
+            position = 'N/A'
 
         results_array.append([
             season,
@@ -55,6 +58,7 @@ def get_draft_picks(season, results_array=None):
             pick_number,
             columns[TEAM].text,
             name,
+            position,
             columns[SEASONS].text,
             columns[GAMES].text or '',
             columns[GOALS].text or '',
