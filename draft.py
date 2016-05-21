@@ -17,6 +17,7 @@ def main():
     results_array = []
 
     for season in range(start_season, end_season + 1):
+        print('Scraping NHL Draft {0}'.format(season))
         results_array = draft.get_draft_picks(season, results_array, args.extra)
 
     helpers.export_array_to_csv(results_array, 'nhl_draft_{0}-{1}.csv'.format(start_season, end_season))
