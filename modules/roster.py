@@ -20,8 +20,8 @@ def get_player_rosters(league, season, results_array=None, multiple_teams=False)
     league = str(league)
     season = str(season)
 
-    if results_array is None or len(results_array) == 0:
-        results_array.append(['Name', 'Position', 'Season', 'League', 'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots'])
+    if results_array is None:
+        results_array = []
     player_ids = []
     team_urls = []
 
@@ -50,6 +50,6 @@ def get_player_rosters(league, season, results_array=None, multiple_teams=False)
     """ Get the players """
 
     for team_url in team_urls:
-        teamroster.get_team_roster(team_url, season, league, player_ids, results_array, multiple_teams)
+        teamroster.get_team_roster(team_url, season, player_ids, results_array, multiple_teams)
 
     return results_array

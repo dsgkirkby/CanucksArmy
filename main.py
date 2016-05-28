@@ -1,11 +1,12 @@
 import argparse
 
-from modules import helpers, stats, roster, standings
+from modules import helpers, stats, roster, teamroster, standings
 
 
 def main():
     arg_parser = argparse.ArgumentParser(description="Get prospect data from any league on the planet over a range of seasons")
     arg_parser.add_argument('--roster', action='store_true', help="Output roster list for the given league(s) and season(s)")
+    arg_parser.add_argument('--team_roster', action='store_true', help="Output roster list for the given team and season(s)")
     arg_parser.add_argument('--stats', action='store_true', help="Output stats list for the given league(s) and season(s)")
     arg_parser.add_argument('--standings', action='store_true', help="All teams in league, with goals for/against")
     arg_parser.add_argument('--multiple_teams', action='store_true', help="Whether to show all teams a player has played for")
@@ -31,6 +32,21 @@ def main():
                     print(e)
 
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_rosters.csv'.format(start_season, end_season, '-'.join(args.leagues)))
+
+    if args.team_roster:
+        results_array = []
+
+        # When running team_rosters, the 'leagues' argument is actually teams
+
+        for league in args.leagues:
+            for season in range(start_season, end_season + 1):
+                try:
+                    teamroster.get_team_roster('team.php?team={0}&year0={1}'.format(league, season), season, results_array=results_array)
+                except Exception as e:
+                    print('Error in {0} {1}'.format(league, season))
+                    print(e)
+
+        helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_team_rosters.csv'.format(start_season, end_season, '-'.join(args.leagues)))
 
     if args.stats:
         results_array = []

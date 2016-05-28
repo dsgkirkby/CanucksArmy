@@ -13,7 +13,10 @@ METRIC = 0
 IMPERIAL = 1
 
 
-def get_team_roster(team_url, season, league, player_ids=[], results_array=[], multiple_teams=False):
+def get_team_roster(team_url, season, player_ids=[], results_array=[], multiple_teams=False):
+    if len(results_array) == 0:
+        results_array.append(['Name', 'Position', 'Season', 'League', 'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots'])
+
     team_search_request = requests.get('http://www.eliteprospects.com/{0}'.format(team_url))
     team_page = BeautifulSoup(team_search_request.text, "html.parser")
 
@@ -22,6 +25,11 @@ def get_team_roster(team_url, season, league, player_ids=[], results_array=[], m
 
     def team_name_tag(tag):
         return tag.has_attr('id') and tag.attrs['id'] == 'fontHeader'
+
+    def league_name_tag(tag):
+        return tag.has_attr('id') and tag.attrs['id'] == 'fontMainlink2'
+
+    league = team_page.find(global_nav_tag).find_parent().previous_sibling.find(league_name_tag).text.strip()
 
     player_table = team_page.find(global_nav_tag).find_next_sibling('table')
 
