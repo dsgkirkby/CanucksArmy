@@ -14,4 +14,4 @@ def get_ohl_stats(season):
     result = decoder.decode(request.text)
     game_ids = list(map(lambda game: game['game_id'], result['SiteKit']['Schedule']))
 
-    return chl_gamesheets.scrape_gamesheets(game_ids, 'http://media.ontariohockeyleague.com/stats/text-game-report.php?game_id={0}', 'Status: Final SO')
+    return chl_gamesheets.scrape_gamesheets(game_ids, 'http://media.ontariohockeyleague.com/stats/official-game-report.php?game_id={0}')

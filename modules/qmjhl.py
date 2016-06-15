@@ -26,4 +26,5 @@ def get_qmjhl_stats(season):
             game_id = game_report_link[-4:]
             game_ids.append(game_id)
 
-    return chl_gamesheets.scrape_gamesheets(game_ids, 'http://theqmjhl.ca/reports/games/{0}/text', 'Status Final SO')
+    # TODO this link is broken
+    return chl_gamesheets.scrape_gamesheets(game_ids, 'http://theqmjhl.ca/reports/games/{0}/text')
