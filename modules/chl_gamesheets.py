@@ -51,8 +51,8 @@ def scrape_gamesheets(game_ids, url):
                 row[3].text.strip().split('-')[1] if len(row[3].text.split('-')) > 1 else '',
                 row[3].text.strip().split('-')[2] if len(row[3].text.split('-')) > 2 else '',
                 '' if row[2].text is None else row[2].text.strip(),
-                ','.join(list(filter(lambda x: len(x.strip()) > 0, map(lambda x: x.text, row[4:9])))),
-                ','.join(list(filter(lambda x: len(x.strip()) > 0, map(lambda x: x.text, row[10:15])))),
+                ','.join(list(filter(lambda x: len(x.strip()) > 0, map(lambda x: x.text, row[4:10])))),
+                ','.join(list(filter(lambda x: len(x.strip()) > 0, map(lambda x: x.text, row[10:16])))),
             ])
 
         print('{0}/{1}'.format(str(game_ids.index(game_id) + 1), str(len(game_ids))))
