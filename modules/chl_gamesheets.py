@@ -38,6 +38,10 @@ def scrape_gamesheets(game_ids, url):
                 gf_team = home_team
                 ga_team = visiting_team
 
+            time = row[1].text.strip()
+            if time[0] == ':':
+                time = '0' + time
+
             goals.append([
                 game_id,
                 date,
@@ -46,7 +50,7 @@ def scrape_gamesheets(game_ids, url):
                 gf_team,
                 ga_team,
                 row[0].text.strip(),
-                row[1].text.strip(),
+                time,
                 row[3].text.strip().split('-')[0],
                 row[3].text.strip().split('-')[1] if len(row[3].text.split('-')) > 1 else '',
                 row[3].text.strip().split('-')[2] if len(row[3].text.split('-')) > 2 else '',
