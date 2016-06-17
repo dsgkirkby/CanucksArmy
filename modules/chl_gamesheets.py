@@ -13,6 +13,8 @@ def find_from_xpath(root, xpath):
 def get_player_name(root, number, is_away):
     roster_table = find_from_xpath(root, './body/table[1]/tbody/tr[3]/td[{0}]/table/tbody'.format('1' if is_away else '3'))
     for player in roster_table[2:]:
+        if len(player[1].text.strip()) < 1:
+            continue
         if int(player[1].text) == int(number):
             bold = find_from_xpath(player[2], './b')
             if find_from_xpath(player[2], './b') is not None:
@@ -20,6 +22,7 @@ def get_player_name(root, number, is_away):
             else:
                 name = player[2].text
             return name.split(',')[1].strip() + ' ' + name.split(',')[0].strip() + '-' + number
+    print('failed to find player name for number\'' + str(number) + '\'')
     return number
 
 
@@ -50,9 +53,21 @@ def scrape_gamesheets(game_ids, url):
             if time[0] == ':':
                 time = '0' + time
 
+            period = row[0].text.strip()
+            if period[0].isdigit():
+                period = period[0]
+
             def parse_plus_minus(player_number_list, is_away_local):
                 non_empty_list = filter(lambda x: len(x.strip()) > 0, map(lambda x: x.text, player_number_list))
-                return ','.join(list(map(lambda x: get_player_name(game_report, x, is_away_local), non_empty_list)))
+                return list(map(lambda x: get_player_name(game_report, x, is_away_local), non_empty_list))
+
+            plusses = parse_plus_minus(row[4:10], is_away)
+            minuses = parse_plus_minus(row[10:16], not is_away)
+
+            if len(plusses) > 0 and len(minuses) > 0:
+                strength = str(len(plusses)) + 'v' + str(len(minuses))
+            else:
+                strength = ''
 
             goals.append([
                 game_id,
@@ -61,14 +76,14 @@ def scrape_gamesheets(game_ids, url):
                 home_team,
                 visiting_team if is_away else home_team,
                 home_team if is_away else visiting_team,
-                row[0].text.strip(),
+                period,
                 time,
                 get_player_name(game_report, row[3].text.strip().split('-')[0], is_away),
                 get_player_name(game_report, row[3].text.strip().split('-')[1], is_away) if len(row[3].text.split('-')) > 1 else '',
                 get_player_name(game_report, row[3].text.strip().split('-')[2], is_away) if len(row[3].text.split('-')) > 2 else '',
-                '' if row[2].text is None else row[2].text.strip(),
-                parse_plus_minus(row[4:10], is_away),
-                parse_plus_minus(row[10:16], not is_away),
+                strength,
+                ','.join(plusses),
+                ','.join(minuses),
             ])
 
         print('{0}/{1}'.format(str(game_ids.index(game_id) + 1), str(len(game_ids))))
