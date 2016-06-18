@@ -67,7 +67,7 @@ def scrape_gamesheets(game_ids, url):
             if len(plusses) > 0 and len(minuses) > 0:
                 strength = str(len(plusses)) + 'v' + str(len(minuses))
             else:
-                strength = ''
+                strength = row[2].text.strip()
 
             goals.append([
                 game_id,
