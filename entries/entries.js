@@ -28,15 +28,11 @@ var SHIFTPERIOD = 1;
 var SHIFTSTART = 2;
 var SHIFTEND = 3;
 
-var STATSPLAYERNAME = 'Player';
-var STATSCORSIP = 'CF%';
-var STATSPLAYERPOSITION = 'Position';
-
 var ENTRYTYPES = {
-	CONTROLLED: 'C',
-	DUMPIN: 'D',
-	FAILED: 'F'
-}
+    CONTROLLED: 'C',
+    DUMPIN: 'D',
+    FAILED: 'F'
+};
 
 var WEIGHTINGS = {};
 WEIGHTINGS[ENTRYTYPES.CONTROLLED] = 2;
@@ -44,239 +40,233 @@ WEIGHTINGS[ENTRYTYPES.DUMPIN] = 1;
 WEIGHTINGS[ENTRYTYPES.FAILED] = 0;
 
 var cli = commandLineArgs([
-	{name: 'team', type: String, defaultOption: true}
+    {name: 'team', type: String, defaultOption: true}
 ]);
 
 var options = cli.parse();
 
 var TEAMNAME = options.team;
 var FILENAME = 'ZoneEntries-' + TEAMNAME + '.csv';
-var STATSFILE = 'stats-' + TEAMNAME + '.csv';
 var OUTPUTFILENAME = 'burdens-' + TEAMNAME + '.csv';
 
 var getCsv = fileName => {
-	return new Promise((resolve, reject) => {
-		var csvData = [];
-		fs.createReadStream(fileName)
-			.pipe(csv({
-				headers: true
-			})).on('data', data => {
-				csvData.push(data);
-			}).on('end', () => {
-				resolve(csvData);
-			});
-	});
+    return new Promise((resolve, reject) => {
+        var csvData = [];
+        fs.createReadStream(fileName)
+            .pipe(csv({
+                headers: true
+            })).on('data', data => {
+            csvData.push(data);
+        }).on('end', () => {
+            resolve(csvData);
+        });
+    });
 };
 
+var delay = 0;
+
 var getPage = url => {
-	return new Promise((resolve, reject) => {
-		http.get(url, response => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            http.get(url, response => {
+                var body = '';
 
-			var body = '';
+                response.on('data', (chunk) => {
+                    body += chunk;
+                });
 
-			response.on('data', (chunk) => {
-				body += chunk;
-			});
+                response.on('end', () => {
+                    resolve(body);
+                });
 
-			response.on('end', () => {
-				resolve(body);
-			});
-
-			response.on('error', error => {
-				reject(error);
-			});
-		});
-	});
+                response.on('error', error => {
+                    reject(error);
+                });
+            });
+        }, delay);
+        delay += 1000;
+    });
 };
 
 var getTimeFromPercentage = p => {
-	if (isNaN(p)) {
-		return convertTimeToFullDigits(p);
-	} else {
-		p = parseFloat(p);
-		p /= 0.833333333;
-		var minutes = Math.floor(20 * p).toString();
-		if (minutes.length < 2) {
-			minutes = '0' + minutes;
-		}
-		var seconds = Math.floor(((20 * p) % 1) * 60).toString();
-		if (seconds.length < 2) {
-			seconds = '0' + seconds;
-		}
-		return minutes + ':' + seconds;
-	}
-}
+    if (isNaN(p)) {
+        return convertTimeToFullDigits(p);
+    } else {
+        p = parseFloat(p);
+        p /= 0.833333333;
+        var minutes = Math.floor(20 * p).toString();
+        if (minutes.length < 2) {
+            minutes = '0' + minutes;
+        }
+        var seconds = Math.floor(((20 * p) % 1) * 60).toString();
+        if (seconds.length < 2) {
+            seconds = '0' + seconds;
+        }
+        return minutes + ':' + seconds;
+    }
+};
 
 var convertTimeToFullDigits = time => {
-	time = time.length < 5 ? '0' + time : time;
-	return time;
-}
+    time = time.length < 5 ? '0' + time : time;
+    return time;
+};
 
 var getEntrySummary = entries => {
-	var add = (a,b) => a + b;
+    var add = (a, b) => a + b;
 
-	var player = 
-		entries[ENTRYTYPES.CONTROLLED].reduce(add) * WEIGHTINGS[ENTRYTYPES.CONTROLLED] +
-		entries[ENTRYTYPES.DUMPIN].reduce(add) * WEIGHTINGS[ENTRYTYPES.DUMPIN] +
-		entries[ENTRYTYPES.FAILED].reduce(add) * WEIGHTINGS[ENTRYTYPES.FAILED];
-	var onIce = 
-		entries[ENTRYTYPES.CONTROLLED].length * WEIGHTINGS[ENTRYTYPES.CONTROLLED] +
-		entries[ENTRYTYPES.DUMPIN].length * WEIGHTINGS[ENTRYTYPES.DUMPIN] +
-		entries[ENTRYTYPES.FAILED].length * WEIGHTINGS[ENTRYTYPES.FAILED];
-	var burden = (player / onIce * 100).toFixed(2) + '%'
-	return {
-		player: player,
-		onIce: onIce,
-		burden: burden
-	}
-}
+    var player =
+        (entries[ENTRYTYPES.CONTROLLED] || []).reduce(add, 0) * WEIGHTINGS[ENTRYTYPES.CONTROLLED] +
+        (entries[ENTRYTYPES.DUMPIN] || []).reduce(add, 0) * WEIGHTINGS[ENTRYTYPES.DUMPIN] +
+        (entries[ENTRYTYPES.FAILED] || []).reduce(add, 0) * WEIGHTINGS[ENTRYTYPES.FAILED];
+    var onIce =
+        (entries[ENTRYTYPES.CONTROLLED] || []).length * WEIGHTINGS[ENTRYTYPES.CONTROLLED] +
+        (entries[ENTRYTYPES.DUMPIN] || []).length * WEIGHTINGS[ENTRYTYPES.DUMPIN] +
+        (entries[ENTRYTYPES.FAILED] || []).length * WEIGHTINGS[ENTRYTYPES.FAILED];
+    var burden = (player / onIce * 100).toFixed(2) + '%';
+    return {
+        player: player,
+        onIce: onIce,
+        burden: burden
+    }
+};
 
-Promise.all([getCsv(FILENAME), getCsv(STATSFILE)]).then(data => {
-	var entries = data[0];
-	var stats = data[1];
+Promise.all([getCsv(FILENAME)]).then(data => {
+    try {
+        var entries = data[0];
 
-	var gameSheets = [];
-	var games = _.each(entries, entry => {
-		if (_.find(entries, entry2 => {
-			return entry[GAMEID] === entry2[GAMEID] && entry[LOCATION] === entry2[LOCATION];
-		}) === entry) {
-			gameSheets.push({
-				game: entry[GAMEID],
-				location: entry[LOCATION]
-			});
-		}
-	});	
-	
+        var gameSheets = [];
+        _.each(entries, entry => {
+            if (_.find(entries, entry2 => {
+                    return entry[GAMEID] === entry2[GAMEID] && entry[LOCATION] === entry2[LOCATION];
+                }) === entry) {
+                gameSheets.push({
+                    game: entry[GAMEID],
+                    location: entry[LOCATION]
+                });
+            }
+        });
 
-	gameSheetPromises = _.map(gameSheets, gameSheet => {
-		return getPage(
-			'http://www.nhl.com/scores/htmlreports/20152016/T' + 
-			(gameSheet.location === 'HOME' ? 'H' : 'V') + 
-			'0' + gameSheet.game + '.HTM');
-	});
+        var gameSheetPromises = _.map(gameSheets, gameSheet => {
+            return getPage(
+                'http://www.nhl.com/scores/htmlreports/20152016/T' +
+                (gameSheet.location.toLowerCase() === 'home' ? 'H' : 'V') +
+                '0' + gameSheet.game + '.HTM');
+        });
 
-	Promise.all(gameSheetPromises).then(data => {
-		try {
-		var shifts = [];
-		var entryBurdens = {};
+        Promise.all(gameSheetPromises).then(data => {
 
-		data.forEach((page, index) => {
-			var $ = cheerio.load(page);
+            try {
+                var shifts = [];
+                var entryBurdens = {};
 
-			var $shifts = $('.oddColor, .evenColor');
+                data.forEach((page, index) => {
+                    var $ = cheerio.load(page);
 
-			var currentName;
-			var gameId = gameSheets[index].game;
+                    var $shifts = $('.oddColor, .evenColor');
 
-			for (var shiftId in $shifts.toArray()) {
-				var $shift = $($shifts[shiftId]);
+                    var currentName;
+                    var gameId = gameSheets[index].game;
 
-				var $data = $shift.find('td');
-				if ($data.length !== 6) {
-					continue;
-				}
+                    for (var shiftId in $shifts.toArray()) {
+                        var $shift = $($shifts[shiftId]);
 
-				if ($($data[SHIFTNUMBER]).text() === '1') {
-					currentName = $shift.prev().prev().text()
-				}
+                        var $data = $shift.find('td');
+                        if ($data.length !== 6) {
+                            continue;
+                        }
 
-				var shiftStart = $($data[SHIFTSTART]).text();
-				var shiftEnd = $($data[SHIFTEND]).text();
+                        if ($($data[SHIFTNUMBER]).text() === '1') {
+                            currentName = $shift.prev().prev().text()
+                        }
 
-				shiftStart = shiftStart.substring(shiftStart.indexOf('/') + 2);
-				shiftEnd = shiftEnd.substring(shiftEnd.indexOf('/') + 2);
+                        var shiftStart = $($data[SHIFTSTART]).text();
+                        var shiftEnd = $($data[SHIFTEND]).text();
 
-				shifts.push({
-					name: currentName.trim(),
-					period: parseInt($($data[SHIFTPERIOD]).text()),
-					gameId: gameId,
-					start: convertTimeToFullDigits(shiftStart),
-					end: convertTimeToFullDigits(shiftEnd),
-				});
-			};
-		});
+                        shiftStart = shiftStart.substring(shiftStart.indexOf('/') + 2);
+                        shiftEnd = shiftEnd.substring(shiftEnd.indexOf('/') + 2);
 
-		var failed = 0;
-		var successful = 0;
+                        shifts.push({
+                            name: currentName.trim(),
+                            period: parseInt($($data[SHIFTPERIOD]).text()),
+                            gameId: gameId,
+                            start: convertTimeToFullDigits(shiftStart),
+                            end: convertTimeToFullDigits(shiftEnd)
+                        });
+                    }
+                });
 
-		entries.forEach(entry => {
-			if (entry[PLAYER].indexOf(TEAMNAME) < 0) {
-				return;
-			}
+                var failed = 0;
+                var successful = 0;
 
-			var time = getTimeFromPercentage(entry[TIME]);
+                entries.forEach(entry => {
+                    if (entry[PLAYER].indexOf(TEAMNAME) < 0) {
+                        return;
+                    }
 
-			var players = shifts.filter(shift => {
-				return shift.period == entry[PERIOD]
-					&& shift.gameId == entry[GAMEID]
-					&& shift.start >= time
-					&& shift.end <= time;
-	        });
+                    var time = getTimeFromPercentage(entry[TIME]);
 
-	        var entererNumber = entry[PLAYER].substr(0, entry[PLAYER].indexOf(TEAMNAME));
+                    var players = shifts.filter(shift => {
+                        return shift.period == entry[PERIOD]
+                            && shift.gameId == entry[GAMEID]
+                            && shift.start >= time
+                            && shift.end <= time;
+                    });
 
-	        var enterer = players.find(player => {
-	        	return player.name.substr(0, entererNumber.length) === entererNumber ? 1 : 0;
-	        });
+                    var entererNumber = entry[PLAYER].substr(0, entry[PLAYER].indexOf(TEAMNAME));
 
-	        if (!enterer) {
-	        	failed++;
-	        	return;
-	        } else {
-	        	successful++;
-	        }
+                    var enterer = players.find(player => {
+                        return player.name.substr(0, entererNumber.length) === entererNumber ? 1 : 0;
+                    });
 
-	        var entryType = entry[TYPE];
+                    if (!enterer) {
+                        failed++;
+                        return;
+                    } else {
+                        successful++;
+                    }
 
-			players.forEach(player => {
-				var playerDidEntry = player === enterer;
-				if (!entryBurdens[player.name]) {
-					entryBurdens[player.name] = {};
-				}
+                    var entryType = entry[TYPE];
 
-				if (!entryBurdens[player.name][entryType]) {
-					entryBurdens[player.name][entryType] = [];
-				}
+                    players.forEach(player => {
+                        var playerDidEntry = player === enterer;
+                        if (!entryBurdens[player.name]) {
+                            entryBurdens[player.name] = {};
+                        }
 
-				entryBurdens[player.name][entryType].push(playerDidEntry ? 1 : 0);
-			});
-		});
+                        if (!entryBurdens[player.name][entryType]) {
+                            entryBurdens[player.name][entryType] = [];
+                        }
 
-		var output = []
+                        entryBurdens[player.name][entryType].push(playerDidEntry ? 1 : 0);
+                    });
+                });
 
-		for (var playerName in entryBurdens) {
-			var playerLastName = playerName.substring(playerName.indexOf(' ') + 1, playerName.indexOf(',')).toUpperCase();
+                var output = [];
 
-			var entryBurden = entryBurdens[playerName];
-			var summary = getEntrySummary(entryBurden);
+                for (var playerName in entryBurdens) {
+                    var entryBurden = entryBurdens[playerName];
+                    var summary = getEntrySummary(entryBurden);
 
-			var playerStats = _.find(stats, statsLine => {
-				var name = statsLine[STATSPLAYERNAME];
-				return name.trim().endsWith(playerLastName);
-			});
+                    output.push({
+                        'Player Name': playerName,
+                        'Player Entries': summary.player,
+                        'On Ice Total': summary.onIce,
+                        'Burden Percentage': summary.burden
+                    });
+                }
 
-			if (!playerStats) {
-				continue;
-			}
-
-			output.push({
-				'Player Name': playerName,
-				'Player Position': playerStats[STATSPLAYERPOSITION],
-				'Player Entries': summary.player,
-				'On Ice Total': summary.onIce,
-				'Burden Percentage': summary.burden,
-				'Player CF%': playerStats[STATSCORSIP]
-			});
-		}
-
-		var writer = csv_writer();
-		writer.pipe(fs.createWriteStream(OUTPUTFILENAME));
-		output.forEach(line => {
-			writer.write(line);
-		});
-		writer.end();
-		} catch (e) {
-			console.log(e);
-		}
-	});
+                var writer = csv_writer();
+                writer.pipe(fs.createWriteStream(OUTPUTFILENAME));
+                output.forEach(line => {
+                    writer.write(line);
+                });
+                writer.end();
+                console.log('success!');
+            } catch (e) {
+                console.error(e.stack);
+            }
+        });
+    } catch (e) {
+        console.error(e.stack);
+    }
 });
