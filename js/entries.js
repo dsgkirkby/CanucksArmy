@@ -5,6 +5,7 @@ var csv = require('fast-csv');
 var csv_writer = require('csv-write-stream');
 var commandLineArgs = require('command-line-args');
 var _ = require('underscore');
+var helpers = require('./helpers');
 
 var PERIOD = 'Period';
 var TIME = 'Time';
@@ -60,31 +61,6 @@ var getCsv = fileName => {
         }).on('end', () => {
             resolve(csvData);
         });
-    });
-};
-
-var delay = 0;
-
-var getPage = url => {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            http.get(url, response => {
-                var body = '';
-
-                response.on('data', (chunk) => {
-                    body += chunk;
-                });
-
-                response.on('end', () => {
-                    resolve(body);
-                });
-
-                response.on('error', error => {
-                    reject(error);
-                });
-            });
-        }, delay);
-        delay += 1000;
     });
 };
 
@@ -146,11 +122,14 @@ Promise.all([getCsv(FILENAME)]).then(data => {
             }
         });
 
+        let delay = 0;
+
         var gameSheetPromises = _.map(gameSheets, gameSheet => {
-            return getPage(
+            delay += 1000;
+            return helpers.getPage(
                 'http://www.nhl.com/scores/htmlreports/20152016/T' +
                 (gameSheet.location.toLowerCase() === 'home' ? 'H' : 'V') +
-                '0' + gameSheet.game + '.HTM');
+                '0' + gameSheet.game + '.HTM', delay);
         });
 
         Promise.all(gameSheetPromises).then(data => {
