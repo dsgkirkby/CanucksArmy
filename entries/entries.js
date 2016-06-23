@@ -262,6 +262,7 @@ Promise.all([getCsv(FILENAME)]).then(data => {
                 });
                 writer.end();
                 console.log('success!');
+                console.log(successful + ' successful, ' + failed + 'failed');
             } catch (e) {
                 console.error(e.stack);
             }
