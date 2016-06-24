@@ -44,11 +44,11 @@ var cli = commandLineArgs([
     {name: 'team', type: String, defaultOption: true}
 ]);
 
-var options = cli.parse();
-
-var TEAMNAME = options.team;
+var TEAMNAME = cli.team;
 var FILENAME = 'ZoneEntries-' + TEAMNAME + '.csv';
 var OUTPUTFILENAME = 'burdens-' + TEAMNAME + '.csv';
+
+var add = (a, b) => Number(a) + Number(b);
 
 var getCsv = fileName => {
     return new Promise((resolve, reject) => {
@@ -87,9 +87,14 @@ var convertTimeToFullDigits = time => {
     return time;
 };
 
-var getEntrySummary = entries => {
-    var add = (a, b) => a + b;
+var convertTimeStringToMinutes = (time) => {
+    var parts = time.split(':');
+    var minutes = Number(parts[0]);
+    var seconds = Number(parts[1]);
+    return minutes + seconds / 60;
+};
 
+var getEntrySummary = entries => {
     var player =
         (entries[ENTRYTYPES.CONTROLLED] || []).reduce(add, 0) * WEIGHTINGS[ENTRYTYPES.CONTROLLED] +
         (entries[ENTRYTYPES.DUMPIN] || []).reduce(add, 0) * WEIGHTINGS[ENTRYTYPES.DUMPIN] +
@@ -112,9 +117,8 @@ Promise.all([getCsv(FILENAME)]).then(data => {
 
         var gameSheets = [];
         _.each(entries, entry => {
-            if (_.find(entries, entry2 => {
-                    return entry[GAMEID] === entry2[GAMEID] && entry[LOCATION] === entry2[LOCATION];
-                }) === entry) {
+            if (_.find(entries, entry2 =>
+                entry[GAMEID] === entry2[GAMEID] && entry[LOCATION] === entry2[LOCATION]) === entry) {
                 gameSheets.push({
                     game: entry[GAMEID],
                     location: entry[LOCATION]
@@ -125,7 +129,7 @@ Promise.all([getCsv(FILENAME)]).then(data => {
         let delay = 0;
 
         var gameSheetPromises = _.map(gameSheets, gameSheet => {
-            delay += 1000;
+            delay += 500;
             return helpers.getPage(
                 'http://www.nhl.com/scores/htmlreports/20152016/T' +
                 (gameSheet.location.toLowerCase() === 'home' ? 'H' : 'V') +
@@ -137,9 +141,22 @@ Promise.all([getCsv(FILENAME)]).then(data => {
             try {
                 var shifts = [];
                 var entryBurdens = {};
+                var oppositionEntries = {};
+                var icetimes = {};
 
                 data.forEach((page, index) => {
                     var $ = cheerio.load(page);
+
+                    var $names = $(".playerHeading");
+                    var $evtoi = $("td.bborder.lborder:contains('TOT')").next().next().next().next();
+                    for (var i = 0; i < $names.length; i++) {
+                        var name = $($names[i]).text();
+                        var iceTime = $($evtoi[i]).text();
+                        if (!icetimes[name]) {
+                            icetimes[name] = 0;
+                        }
+                        icetimes[name] += convertTimeStringToMinutes(iceTime);
+                    }
 
                     var $shifts = $('.oddColor, .evenColor');
 
@@ -178,7 +195,13 @@ Promise.all([getCsv(FILENAME)]).then(data => {
                 var successful = 0;
 
                 entries.forEach(entry => {
-                    if (entry[PLAYER].indexOf(TEAMNAME) < 0) {
+                    if (entry[TMSTRENGTH] !== entry[OPPSTRENGTH]) {
+                        return;
+                    }
+
+                    var entererNumber = entry[PLAYER].substr(0, entry[PLAYER].search(/[^0-9]/));
+
+                    if (entererNumber.length < 1) {
                         return;
                     }
 
@@ -191,13 +214,13 @@ Promise.all([getCsv(FILENAME)]).then(data => {
                             && shift.end <= time;
                     });
 
-                    var entererNumber = entry[PLAYER].substr(0, entry[PLAYER].indexOf(TEAMNAME));
-
                     var enterer = players.find(player => {
                         return player.name.substr(0, entererNumber.length) === entererNumber ? 1 : 0;
                     });
 
-                    if (!enterer) {
+                    var entryMadeByOpposingTeam = entry[PLAYER].indexOf(TEAMNAME) < 0;
+
+                    if (!enterer && !entryMadeByOpposingTeam) {
                         failed++;
                         return;
                     } else {
@@ -207,16 +230,29 @@ Promise.all([getCsv(FILENAME)]).then(data => {
                     var entryType = entry[TYPE];
 
                     players.forEach(player => {
-                        var playerDidEntry = player === enterer;
-                        if (!entryBurdens[player.name]) {
-                            entryBurdens[player.name] = {};
+                        if (entryMadeByOpposingTeam) {
+                            if (!oppositionEntries[player.name]) {
+                                oppositionEntries[player.name] = {};
+                            }
+
+                            if (!oppositionEntries[player.name][entryType]) {
+                                oppositionEntries[player.name][entryType] = [];
+                            }
+
+                            oppositionEntries[player.name][entryType].push(entry[FEN]);
+                        } else {
+                            var playerDidEntry = player === enterer;
+                            if (!entryBurdens[player.name]) {
+                                entryBurdens[player.name] = {};
+                            }
+
+                            if (!entryBurdens[player.name][entryType]) {
+                                entryBurdens[player.name][entryType] = [];
+                            }
+
+                            entryBurdens[player.name][entryType].push(playerDidEntry ? 1 : 0);
                         }
 
-                        if (!entryBurdens[player.name][entryType]) {
-                            entryBurdens[player.name][entryType] = [];
-                        }
-
-                        entryBurdens[player.name][entryType].push(playerDidEntry ? 1 : 0);
                     });
                 });
 
@@ -225,12 +261,25 @@ Promise.all([getCsv(FILENAME)]).then(data => {
                 for (var playerName in entryBurdens) {
                     var entryBurden = entryBurdens[playerName];
                     var summary = getEntrySummary(entryBurden);
+                    var controlledAgainst = oppositionEntries[playerName][ENTRYTYPES.CONTROLLED].length;
+                    var shotsFromControlledAgainst = oppositionEntries[playerName][ENTRYTYPES.CONTROLLED].reduce(add);
+                    var uncontrolledAgainst = oppositionEntries[playerName][ENTRYTYPES.DUMPIN].length;
+                    var shotsFromUncontrolledAgainst = oppositionEntries[playerName][ENTRYTYPES.DUMPIN].reduce(add);
+                    var failedAgainst = oppositionEntries[playerName][ENTRYTYPES.FAILED].length;
 
                     output.push({
                         'Player Name': playerName,
                         'Player Entries': summary.player,
-                        'On Ice Total': summary.onIce,
-                        'Burden Percentage': summary.burden
+                        'On Ice For Total': summary.onIce,
+                        'Burden Percentage': summary.burden,
+                        'Controlled Against': controlledAgainst,
+                        'Shots From Controlled Against': shotsFromControlledAgainst,
+                        'Dump Ins Against': uncontrolledAgainst,
+                        "Shots From Dump Ins Against": shotsFromUncontrolledAgainst,
+                        "ES Ice Time": icetimes[playerName],
+                        "Failed Against": failedAgainst,
+                        "Total Against": controlledAgainst + uncontrolledAgainst,
+                        "Total Shots Against": shotsFromControlledAgainst + shotsFromUncontrolledAgainst
                     });
                 }
 
