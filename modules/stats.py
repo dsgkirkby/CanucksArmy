@@ -12,6 +12,8 @@ POINTS = 6
 PIM = 8
 PLUSMINUS = 9
 
+DUPLICATES_ALLOWED = 5
+
 
 def get_player_stats(league, season, results_array, show_multiple_teams=False):
     league = str(league)
@@ -24,9 +26,9 @@ def get_player_stats(league, season, results_array, show_multiple_teams=False):
 
     player_ids = []
     page_index = 1
-    done = False
+    duplicates_left = DUPLICATES_ALLOWED
 
-    while not done:
+    while duplicates_left > 0:
         url = "http://www.eliteprospects.com/league.php?currentpage={0}&season={1}&leagueid={2}".format(str(page_index), str(int(season) - 1), league)
         r = requests.get(url)
 
@@ -61,8 +63,10 @@ def get_player_stats(league, season, results_array, show_multiple_teams=False):
 
             player_id = name + player_rank + (player_stats[TEAM].text if show_multiple_teams else '')
             if player_id in player_ids:
-                done = True
+                duplicates_left -= 1
                 break
+
+            duplicates_left = DUPLICATES_ALLOWED
 
             team = player_stats[TEAM].text
             games = player_stats[GAMES].text
