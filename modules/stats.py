@@ -64,9 +64,10 @@ def get_player_stats(league, season, results_array, show_multiple_teams=False):
             player_id = name + player_rank + (player_stats[TEAM].text if show_multiple_teams else '')
             if player_id in player_ids:
                 duplicates_left -= 1
-                break
-
-            duplicates_left = DUPLICATES_ALLOWED
+                if duplicates_left > 0:
+                    continue
+                else:
+                    break
 
             team = player_stats[TEAM].text
             games = player_stats[GAMES].text
@@ -81,6 +82,8 @@ def get_player_stats(league, season, results_array, show_multiple_teams=False):
                     continue
                 else:
                     team = 'multiple'
+
+            duplicates_left = DUPLICATES_ALLOWED
 
             player_ids.append(player_id)
             results_array.append([
