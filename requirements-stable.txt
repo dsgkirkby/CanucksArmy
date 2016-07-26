@@ -1,4 +1,5 @@
-beautifulsoup4==4.4.1
-html5lib==0.9999999
+beautifulsoup4==4.5.0
+html5lib==0.999999999
 requests==2.9.1
 six==1.10.0
+webencodings==0.5
