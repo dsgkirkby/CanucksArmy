@@ -13,7 +13,13 @@ METRIC = 0
 IMPERIAL = 1
 
 
-def get_team_roster(team_url, season, player_ids=[], results_array=[], multiple_teams=False, league=''):
+def get_team_roster(team_url, season, player_ids=None, results_array=None, multiple_teams=False, league=''):
+    if results_array is None:
+        results_array = []
+
+    if player_ids is None:
+        player_ids = []
+
     if len(results_array) == 0:
         results_array.append(['Name', 'Position', 'Season', 'League', 'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots'])
 
