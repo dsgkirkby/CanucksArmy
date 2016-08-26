@@ -24,7 +24,7 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
         results_array.append(['Name', 'Position', 'Season', 'League', 'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots'])
 
     team_search_request = requests.get('http://www.eliteprospects.com/{0}'.format(team_url))
-    team_page = BeautifulSoup(team_search_request.text, "html5lib")
+    team_page = BeautifulSoup(team_search_request.text, "html.parser")
 
     def global_nav_tag(tag):
         return tag.has_attr('id') and tag.attrs['id'] == 'globalnav'

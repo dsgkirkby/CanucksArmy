@@ -66,11 +66,11 @@ def main():
 
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
-                # try:
+                try:
                     standings.get_league_standings(league, season, results_array)
-                # except Exception as e:
-                #     print('Error in {0} {1}'.format(league, season))
-                #     print(e)
+                except Exception as e:
+                    print('Error in {0} {1}'.format(league, season))
+                    print(e)
 
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_standings.csv'.format(start_season, end_season, '-'.join(args.leagues)))
 
