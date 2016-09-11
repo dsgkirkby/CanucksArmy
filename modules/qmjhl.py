@@ -1,10 +1,7 @@
 import requests
-import re
 import time
 from modules import chl_gamesheets
 from bs4 import BeautifulSoup
-
-EXTRA_COLUMNS = 0
 
 
 def get_qmjhl_stats(season):

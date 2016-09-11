@@ -2,19 +2,6 @@ import requests
 import html5lib
 from modules import teamroster
 
-ID = 0
-NAME = 1
-DOB = 3
-HOMETOWN = 4
-HEIGHT = 5
-WEIGHT = 6
-SHOOTS = 7
-
-METRIC = 0
-IMPERIAL = 1
-
-""" ROSTER PARSER """
-
 
 def get_player_rosters(league, season, results_array=None, multiple_teams=False):
     league = str(league)

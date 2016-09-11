@@ -1,6 +1,5 @@
 import requests
 import html5lib
-import xml.etree.ElementTree as ElementTree
 
 NAME = 1
 GAMES = 2

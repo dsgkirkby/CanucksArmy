@@ -2,8 +2,6 @@ import requests
 import json
 from modules import chl_gamesheets
 
-EXTRA_COLUMNS = 0
-
 
 def get_ohl_stats(season):
     season = str(season)

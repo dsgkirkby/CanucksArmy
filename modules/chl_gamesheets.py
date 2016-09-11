@@ -1,6 +1,5 @@
 import requests
 import html5lib
-import xml.etree.ElementTree as etree
 
 html_prefix = '{http://www.w3.org/1999/xhtml}'
 

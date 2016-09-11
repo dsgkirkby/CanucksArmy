@@ -6,8 +6,6 @@ var cli = commandLineArgs([
     {name: 'games', type: String, defaultOption: true}
 ]);
 
-// var options = cli.parse();
-
 var gameIds = cli.games.split(',');
 
 let delay = 0;
@@ -51,5 +49,4 @@ Promise.all(gameSheetPromises).then((data) => {
     } catch (e) {
         console.error(e.stack);
     }
-
 });

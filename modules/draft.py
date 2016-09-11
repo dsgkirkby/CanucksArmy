@@ -1,6 +1,5 @@
 import requests
 import html5lib
-import xml.etree.ElementTree
 
 NUMBER = 0
 TEAM = 1
