@@ -18,4 +18,4 @@ Then, follow these steps:
 3. Clone the repository `git clone https://github.com/NoNeedToBail/CanucksArmy.git`
 4. Navigate to the root of the cloned repository
 5. Install the python requirements `pip install -r requirements-stable.txt`
-6. You can now run the scripts! Run `python main.py -h` to get started!
+6. You can now run the scripts! Run `python main.py -h` to see some of the options you have.
