@@ -1,5 +1,9 @@
 # CanucksArmy
 
+These are the Python scripts that we use to scrape NHL data at CanucksArmy. This repository will be maintained with bug
+fixes, but will not receive new features. Future development will happen at
+[CanucksArmy.js](https://github.com/dsgkirkby/CanucksArmy.js).
+
 ## Getting Started
 
 To run the python scripts, you must have the following installed:
