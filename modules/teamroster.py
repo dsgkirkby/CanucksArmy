@@ -1,13 +1,13 @@
 import requests
 from bs4 import BeautifulSoup
 
-ID = 0
-NAME = 1
-DOB = 3
-HOMETOWN = 4
-HEIGHT = 5
-WEIGHT = 6
-SHOOTS = 7
+ID = 1
+NAME = 2
+DOB = 4
+HOMETOWN = 5
+HEIGHT = 6
+WEIGHT = 7
+SHOOTS = 8
 
 METRIC = 0
 IMPERIAL = 1
@@ -44,7 +44,7 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
     team_name = team_page.find(team_name_tag).text
 
     """ Row 0 is the title row """
-    for playerIndex in range(1, len(players)):
+    for playerIndex in range(1, len(players) - 1):
         player = players[playerIndex]
         player_stats = player.find_all('td')
 
