@@ -35,6 +35,7 @@ def get_player_stats(league, season, results_array, show_multiple_teams=False):
         regex = re.compile('PLAYER STATS')
 
         page_text = r.text.replace('<br>', '<br/>')
+        page_text = re.sub(r"<hr(.*)>", r"<hr\1/>", page_text)
 
         soup = BeautifulSoup(page_text, "html.parser")
         player_table = soup.find(text=regex).parent.parent.find_all("table")[2]
