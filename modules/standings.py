@@ -51,7 +51,6 @@ def get_league_standings(league, season, results_array=None):
         goals_for = team_stats[GOALS_FOR].text
         goals_against = team_stats[GOALS_AGAINST].text
         points = team_stats[POINTS].find('.//{0}strong'.format(html_prefix)).text
-        print(points)
         postseason = ''.join(team_stats[POSTSEASON].itertext()).strip()
 
         results_array.append([
