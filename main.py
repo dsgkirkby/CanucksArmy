@@ -50,16 +50,24 @@ def main():
 
     if args.stats:
         results_array = []
+        goalie_results_array = []
 
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
                 try:
-                    stats.get_player_stats(league, season, results_array, multiple_teams)
+                    stats.get_player_stats(league, season, results_array, goalie_results_array, multiple_teams)
                 except Exception as e:
                     print('Error in {0} {1}'.format(league, season))
                     print(e)
 
-        helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_stats.csv'.format(start_season, end_season, '-'.join(args.leagues)))
+        helpers.export_array_to_csv(
+            results_array,
+            '{0}-{1}_{2}_stats.csv'.format(start_season, end_season, '-'.join(args.leagues))
+        )
+        helpers.export_array_to_csv(
+            goalie_results_array,
+            '{0}-{1}_{2}_goalie_stats.csv'.format(start_season, end_season, '-'.join(args.leagues))
+        )
 
     if args.standings:
         results_array = []
