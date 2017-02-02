@@ -5,6 +5,7 @@ NAME = 1
 GAMES = 2
 GOALS_FOR = 8
 GOALS_AGAINST = 9
+POINTS = 11
 POSTSEASON = 12
 
 """ ROSTER PARSER """
@@ -15,7 +16,7 @@ def get_league_standings(league, season, results_array=None):
     season = str(season)
 
     if results_array is None or len(results_array) == 0:
-        results_array.append(['Team Name', 'League', 'Season', 'Games', 'GF', 'GA', 'PostSeason'])
+        results_array.append(['Team Name', 'League', 'Season', 'Games', 'GF', 'GA', 'Points', 'PostSeason'])
 
     standings_url = 'http://www.eliteprospects.com/standings.php?league={0}&startdate={1}'.format(league, str(int(season) - 1))
     request = requests.get(standings_url)
@@ -49,6 +50,8 @@ def get_league_standings(league, season, results_array=None):
         games = team_stats[GAMES].text
         goals_for = team_stats[GOALS_FOR].text
         goals_against = team_stats[GOALS_AGAINST].text
+        points = team_stats[POINTS].find('.//{0}strong'.format(html_prefix)).text
+        print(points)
         postseason = ''.join(team_stats[POSTSEASON].itertext()).strip()
 
         results_array.append([
@@ -58,6 +61,7 @@ def get_league_standings(league, season, results_array=None):
             games,
             goals_for,
             goals_against,
+            points,
             postseason
         ])
 
