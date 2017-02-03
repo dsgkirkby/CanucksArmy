@@ -162,6 +162,7 @@ def get_player_stats(league, season, results_array, goalie_results_array, show_m
             goalie_results_array.append([
                 name,
                 season,
+                league,
                 team,
                 games,
                 gaa,
