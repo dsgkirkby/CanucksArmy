@@ -22,7 +22,7 @@ GOALIE_SVP = 5
 DUPLICATES_ALLOWED = 5
 
 
-def get_player_stats(league, season, results_array, goalie_results_array, show_multiple_teams=False):
+def get_player_stats(league, season, results_array, goalie_results_array, show_multiple_teams=False, playoffs=False):
     league = str(league)
 
     if results_array is None:
@@ -44,7 +44,9 @@ def get_player_stats(league, season, results_array, goalie_results_array, show_m
     goalie_duplicates_left = DUPLICATES_ALLOWED
 
     while player_duplicates_left > 0 or goalie_duplicates_left > 0:
-        url = "http://www.eliteprospects.com/league.php?currentpage={0}&season={1}&leagueid={2}".format(str(page_index), str(int(season) - 1), league)
+        baseurl = "http://www.eliteprospects.com/postseason.php?currentpage={0}&season={1}&leagueid={2}&postseasonid=Playoffs" if playoffs else "http://www.eliteprospects.com/league.php?currentpage={0}&season={1}&leagueid={2}"
+
+        url = baseurl.format(str(page_index), str(int(season) - 1), league)
         r = requests.get(url)
 
         player_regex = re.compile('PLAYER STATS')
@@ -79,9 +81,8 @@ def get_player_stats(league, season, results_array, goalie_results_array, show_m
             if player_stats[NAME].a is not None:
                 name = player_stats[NAME].a.text
                 position = player_stats[NAME].font.text.strip()[1:-1]
-                player_rank = player_stats[ID].text
 
-            player_id = name + player_rank + (player_stats[TEAM].text if show_multiple_teams else '')
+            player_id = player_stats[NAME].a.attrs['href'] + (player_stats[TEAM].text if show_multiple_teams else '')
             if player_id in player_ids:
                 player_duplicates_left -= 1
                 if player_duplicates_left > 0:

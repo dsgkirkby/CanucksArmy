@@ -8,6 +8,7 @@ def main():
     arg_parser.add_argument('--roster', action='store_true', help="Output roster list for the given league(s) and season(s)")
     arg_parser.add_argument('--team_roster', action='store_true', help="Output roster list for the given team and season(s)")
     arg_parser.add_argument('--stats', action='store_true', help="Output stats list for the given league(s) and season(s)")
+    arg_parser.add_argument('--playoffs', action='store_true', help="Use playoff instead of regular season stats")
     arg_parser.add_argument('--standings', action='store_true', help="All teams in league, with goals for/against")
     arg_parser.add_argument('--multiple_teams', action='store_true', help="Whether to show all teams a player has played for")
     arg_parser.add_argument('leagues', type=helpers.comma_delimited_list, help="Comma-delimited list (no spaces) of leagues")
@@ -19,6 +20,7 @@ def main():
     start_season = args.start_season
     end_season = args.range if args.range is not None else args.start_season
     multiple_teams = args.multiple_teams
+    playoffs = args.playoffs
 
     if args.roster:
         results_array = []
@@ -55,18 +57,18 @@ def main():
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
                 try:
-                    stats.get_player_stats(league, season, results_array, goalie_results_array, multiple_teams)
+                    stats.get_player_stats(league, season, results_array, goalie_results_array, multiple_teams, playoffs)
                 except Exception as e:
                     print('Error in {0} {1}'.format(league, season))
                     print(e)
 
         helpers.export_array_to_csv(
             results_array,
-            '{0}-{1}_{2}_stats.csv'.format(start_season, end_season, '-'.join(args.leagues))
+            '{0}-{1}_{2}{3}_stats.csv'.format(start_season, end_season, '-'.join(args.leagues), '_playoff' if playoffs else '')
         )
         helpers.export_array_to_csv(
             goalie_results_array,
-            '{0}-{1}_{2}_goalie_stats.csv'.format(start_season, end_season, '-'.join(args.leagues))
+            '{0}-{1}_{2}{3}_goalie_stats.csv'.format(start_season, end_season, '-'.join(args.leagues), '_playoff' if playoffs else '')
         )
 
     if args.standings:
