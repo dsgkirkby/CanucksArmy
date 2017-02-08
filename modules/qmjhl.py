@@ -24,4 +24,4 @@ def get_qmjhl_stats(season):
             game_ids.append(game_id)
 
     # TODO this link is broken
-    return chl_gamesheets.scrape_gamesheets(game_ids, 'http://theqmjhl.ca/reports/games/{0}/text')
+    return chl_gamesheets.scrape_gamesheets(game_ids, 'http://theqmjhl.ca/reports/games/{0}/official')
