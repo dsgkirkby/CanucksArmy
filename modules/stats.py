@@ -77,13 +77,14 @@ def get_player_stats(league, season, results_array, goalie_results_array, show_m
             if skip_row or '-' in player_stats[GOALS]:
                 continue
 
-            # if there is no value, use the old one
+            # If there is no <a> in the player row, then this row is a continuation of a previous player
             if player_stats[NAME].a is not None:
                 name = player_stats[NAME].a.text
                 position = player_stats[NAME].font.text.strip()[1:-1]
+                player_id = player_stats[NAME].a.attrs['href']
 
-            player_id = player_stats[NAME].a.attrs['href'] + (player_stats[TEAM].text if show_multiple_teams else '')
-            if player_id in player_ids:
+            current_player_id = player_id + (player_stats[TEAM].text if show_multiple_teams else '')
+            if current_player_id in player_ids:
                 player_duplicates_left -= 1
                 if player_duplicates_left > 0:
                     continue
@@ -106,7 +107,7 @@ def get_player_stats(league, season, results_array, goalie_results_array, show_m
 
             player_duplicates_left = DUPLICATES_ALLOWED
 
-            player_ids.append(player_id)
+            player_ids.append(current_player_id)
             results_array.append([
                 name,
                 position,
