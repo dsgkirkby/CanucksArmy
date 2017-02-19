@@ -21,7 +21,7 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
         player_ids = []
 
     if len(results_array) == 0:
-        results_array.append(['Name', 'Position', 'Season', 'League', 'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots'])
+        results_array.append(['Number', 'Name', 'Position', 'Season', 'League', 'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots'])
 
     team_search_request = requests.get('http://www.eliteprospects.com/{0}'.format(team_url))
     team_page = BeautifulSoup(team_search_request.text, "html.parser")
@@ -54,6 +54,7 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
 
         try:
             name = player_stats[NAME].a.text.strip()
+            number = player_stats[ID].text.strip()[1:]
             position = player_stats[NAME].font.text.strip()[1:-1]
             dob = player_stats[DOB].text.strip()
             hometown = player_stats[HOMETOWN].a.text.strip()
@@ -73,7 +74,9 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
             player_ids.append(player_id)
 
         results_array.append([
+            number,
             name,
+            number,
             position,
             season,
             league_name,
