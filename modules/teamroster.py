@@ -76,6 +76,7 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
         results_array.append([
             number,
             name,
+            number,
             position,
             season,
             league_name,
