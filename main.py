@@ -1,6 +1,6 @@
 import argparse
 
-from modules import helpers, stats, roster, teamroster, standings
+from modules import helpers, stats, roster, teamroster, standings, icetime
 
 
 def main():
@@ -10,6 +10,7 @@ def main():
     arg_parser.add_argument('--stats', action='store_true', help="Output stats list for the given league(s) and season(s)")
     arg_parser.add_argument('--playoffs', action='store_true', help="Use playoff instead of regular season stats")
     arg_parser.add_argument('--standings', action='store_true', help="All teams in league, with goals for/against")
+    arg_parser.add_argument('--icetime', action='store_true', help="NHL icetime for season")
     arg_parser.add_argument('--multiple_teams', action='store_true', help="Whether to show all teams a player has played for")
     arg_parser.add_argument('leagues', type=helpers.comma_delimited_list, help="Comma-delimited list (no spaces) of leagues")
     arg_parser.add_argument('start_season', type=int, help="Earliest season for which to scrape data. Second year of the season (i.e. passing 2014 refers to the 2013-14 season)")
@@ -21,6 +22,22 @@ def main():
     end_season = args.range if args.range is not None else args.start_season
     multiple_teams = args.multiple_teams
     playoffs = args.playoffs
+
+    if args.icetime:
+        if len(args.leagues) is not 1 or args.leagues[0].lower() != "nhl":
+            print("Error: Icetime is currently only supported for the NHL")
+            return
+
+        results_array = []
+
+        for season in range(start_season, end_season + 1):
+            try:
+                icetime.get_nhl_season_icetime(season, results_array)
+            except Exception as e:
+                print('Error in {0} {1}'.format('nhl', season))
+                print(e)
+
+        helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_icetime.csv'.format(start_season, end_season, 'nhl'))
 
     if args.roster:
         results_array = []
