@@ -1,6 +1,6 @@
 import argparse
 
-from modules import helpers, stats, roster, teamroster, standings, icetime
+from modules import helpers, stats, roster, teamroster, standings, icetime, hockeydb_stats
 
 
 def main():
@@ -8,6 +8,7 @@ def main():
     arg_parser.add_argument('--roster', action='store_true', help="Output roster list for the given league(s) and season(s)")
     arg_parser.add_argument('--team_roster', action='store_true', help="Output roster list for the given team and season(s)")
     arg_parser.add_argument('--stats', action='store_true', help="Output stats list for the given league(s) and season(s)")
+    arg_parser.add_argument('--hockeydb_stats', action='store_true', help="Output stats list for the given league(s) and season(s), sourced from hockeydb")
     arg_parser.add_argument('--playoffs', action='store_true', help="Use playoff instead of regular season stats")
     arg_parser.add_argument('--standings', action='store_true', help="All teams in league, with goals for/against")
     arg_parser.add_argument('--icetime', action='store_true', help="NHL icetime for season")
@@ -78,6 +79,27 @@ def main():
                 except Exception as e:
                     print('Error in {0} {1}'.format(league, season))
                     print(e)
+
+        helpers.export_array_to_csv(
+            results_array,
+            '{0}-{1}_{2}{3}_stats.csv'.format(start_season, end_season, '-'.join(args.leagues), '_playoff' if playoffs else '')
+        )
+        helpers.export_array_to_csv(
+            goalie_results_array,
+            '{0}-{1}_{2}{3}_goalie_stats.csv'.format(start_season, end_season, '-'.join(args.leagues), '_playoff' if playoffs else '')
+        )
+
+    if args.hockeydb_stats:
+        results_array = []
+        goalie_results_array = []
+
+        for league in args.leagues:
+            for season in range(start_season, end_season + 1):
+                # try:
+                    hockeydb_stats.get_player_stats(league, season, results_array, goalie_results_array, multiple_teams, playoffs)
+                # except Exception as e:
+                #     print('Error in {0} {1}'.format(league, season))
+                #     print(e)
 
         helpers.export_array_to_csv(
             results_array,
