@@ -1,4 +1,5 @@
 import csv
+from unidecode import unidecode
 
 
 def export_array_to_csv(array, name):
@@ -6,17 +7,7 @@ def export_array_to_csv(array, name):
         csv_writer = csv.writer(csvFile)
         for resultRow in array:
             for index, item in enumerate(resultRow):
-                resultRow[index] = str(item)\
-                    .replace(u'\u0148', 'n')\
-                    .replace(u'\u2010', '-')\
-                    .replace(u'\x9E', u'\u017E')\
-                    .replace(u'\u0107', 'c')\
-                    .replace(u'\u010d', 'c')\
-                    .replace(u'\u0441', 'c')\
-                    .replace(u'\u013d', 'L')\
-                    .replace(u'\u013e', 'l')\
-                    .replace(u'\u0159', 'r')\
-                    .replace(u'\x9a', 's')
+                resultRow[index] = unidecode(item)
             try:
                 csv_writer.writerow(resultRow)
             except UnicodeEncodeError as e:
