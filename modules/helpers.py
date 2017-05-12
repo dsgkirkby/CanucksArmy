@@ -7,7 +7,7 @@ def export_array_to_csv(array, name):
         csv_writer = csv.writer(csvFile)
         for resultRow in array:
             for index, item in enumerate(resultRow):
-                resultRow[index] = unidecode(item)
+                resultRow[index] = unidecode(str(item))
             try:
                 csv_writer.writerow(resultRow)
             except UnicodeEncodeError as e:
