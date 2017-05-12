@@ -2,4 +2,5 @@ beautifulsoup4==4.5.3
 html5lib==0.999999999
 requests==2.9.1
 six==1.10.0
+Unidecode==0.4.20
 webencodings==0.5
