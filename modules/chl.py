@@ -4,11 +4,7 @@ import multiprocessing
 from modules.helpers import listmap, flatten
 
 
-league_keys = {
-    'qmjhl': 'f109cf290fcf50d4',
-    'ohl': 'c680916776709578',
-    'whl': 'f109cf290fcf50d4',
-}
+api_key = 'f109cf290fcf50d4'
 
 league_codes = {
     'qmjhl': 'lhjmq',
@@ -33,7 +29,7 @@ def player_name(player):
 
 def get_game_info(game_info):
     league = game_info['league']
-    game_summary = get_json('http://cluster.leaguestat.com/feed/index.php?feed=gc&key={0}&client_code={1}&game_id={2}&lang_code=en&fmt=json&tab=gamesummary'.format(league_keys[league], league_codes[league], game_info['game_id']))['GC']['Gamesummary']
+    game_summary = get_json('http://cluster.leaguestat.com/feed/index.php?feed=gc&key={0}&client_code={1}&game_id={2}&lang_code=en&fmt=json&tab=gamesummary'.format(api_key, league_codes[league], game_info['game_id']))['GC']['Gamesummary']
 
     home_team = team_name(game_summary['visitor'])
     away_team = team_name(game_summary['home'])
@@ -64,7 +60,7 @@ def get_season_stats(season, league):
 
     titles = [['GameID', 'date', 'visiting team', 'home team', 'GF team', 'GA team', 'period', 'time', 'scorer', 'assist1', 'assist2', 'situation', 'plus', 'minus']]
 
-    schedule = get_json('http://cluster.leaguestat.com/feed/?feed=modulekit&view=schedule&key={0}&fmt=json&client_code={1}&lang=en&season_id={2}&team_id=undefined&league_code=&fmt=json'.format(league_keys[league], league_codes[league], str(season)))['SiteKit']['Schedule']
+    schedule = get_json('http://cluster.leaguestat.com/feed/?feed=modulekit&view=schedule&key={0}&fmt=json&client_code={1}&lang=en&season_id={2}&team_id=undefined&league_code=&fmt=json'.format(api_key, league_codes[league], str(season)))['SiteKit']['Schedule']
 
     pool = multiprocessing.Pool(16)
 
