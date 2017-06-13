@@ -33,10 +33,14 @@ def player_name(player):
 
 def get_game_info(game_info):
     league = game_info['league']
-    game_summary = get_json('http://cluster.leaguestat.com/feed/index.php?feed=gc&key={0}&client_code={1}&game_id=25277&lang_code=en&fmt=json&tab=gamesummary'.format(league_keys[league], league_codes[league]))['GC']['Gamesummary']
+    game_summary = get_json('http://cluster.leaguestat.com/feed/index.php?feed=gc&key={0}&client_code={1}&game_id={2}&lang_code=en&fmt=json&tab=gamesummary'.format(league_keys[league], league_codes[league], game_info['game_id']))['GC']['Gamesummary']
 
     home_team = team_name(game_summary['visitor'])
     away_team = team_name(game_summary['home'])
+
+    # 0-0 game
+    if game_summary['goals'] is None:
+        return []
 
     return listmap(game_summary['goals'], lambda goal: [
         game_info['game_id'],
