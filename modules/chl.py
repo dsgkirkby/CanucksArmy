@@ -1,7 +1,7 @@
 import requests
 import json
 import multiprocessing
-from modules.helpers import listmap, flatten
+from modules.helpers import listmap, flatten, strip_extra_spaces
 
 
 api_key = 'f109cf290fcf50d4'
@@ -20,11 +20,11 @@ def get_json(url):
 
 
 def team_name(team):
-    return team['city'] + ' ' + team['nickname']
+    return strip_extra_spaces(team['city'] + ' ' + team['nickname'])
 
 
 def player_name(player):
-    return (player['first_name'] + ' ' + player['last_name']) if player['player_id'] is not None else ''
+    return strip_extra_spaces((player['first_name'] + ' ' + player['last_name']) if player['player_id'] is not None else '')
 
 
 def get_game_info(game_info):

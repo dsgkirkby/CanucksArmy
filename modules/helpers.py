@@ -1,4 +1,5 @@
 import csv
+import re
 from unidecode import unidecode
 
 
@@ -24,3 +25,6 @@ def flatten(thing):
 
 def listmap(iteratee, func):
     return list(map(func, iteratee))
+
+def strip_extra_spaces(text):
+    return re.sub(' +', ' ', text)
