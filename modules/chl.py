@@ -50,7 +50,7 @@ def get_game_info(game_info):
         player_name(goal['goal_scorer']),
         player_name(goal['assist1_player']),
         player_name(goal['assist2_player']),
-        str(len(goal['plus'])) + 'v' + str(len(goal['minus'])),
+        (str(len(goal['plus'])) + 'v' + str(len(goal['minus']))) if len(goal['plus']) > 0 else '5v4',
         ",".join(listmap(goal['plus'], player_name)),
         ",".join(listmap(goal['minus'], player_name)),
     ])
