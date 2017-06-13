@@ -23,6 +23,13 @@ def team_name(team):
     return strip_extra_spaces(team['city'] + ' ' + team['nickname'])
 
 
+def team_roster(team_lineup):
+    return ",".join(listmap(
+        team_lineup['goalies'] + team_lineup['players'],
+        player_name
+    ))
+
+
 def player_name(player):
     return strip_extra_spaces((player['first_name'] + ' ' + player['last_name']) if player['player_id'] is not None else '')
 
@@ -33,6 +40,9 @@ def get_game_info(game_info):
 
     home_team = team_name(game_summary['visitor'])
     away_team = team_name(game_summary['home'])
+
+    home_roster = team_roster(game_summary['home_team_lineup']) if type(game_summary['home_team_lineup']) is not list else ''
+    away_roster = team_roster(game_summary['visitor_team_lineup']) if type(game_summary['visitor_team_lineup']) is not list else ''
 
     # 0-0 game
     if game_summary['goals'] is None:
@@ -53,12 +63,14 @@ def get_game_info(game_info):
         (str(len(goal['plus'])) + 'v' + str(len(goal['minus']))) if len(goal['plus']) > 0 else '5v4',
         ",".join(listmap(goal['plus'], player_name)),
         ",".join(listmap(goal['minus'], player_name)),
+        home_roster if goal['home'] == '1' else away_roster,
+        home_roster if goal['home'] == '0' else away_roster,
     ])
 
 
 def get_season_stats(season, league):
 
-    titles = [['GameID', 'date', 'visiting team', 'home team', 'GF team', 'GA team', 'period', 'time', 'scorer', 'assist1', 'assist2', 'situation', 'plus', 'minus']]
+    titles = [['GameID', 'date', 'visiting team', 'home team', 'GF team', 'GA team', 'period', 'time', 'scorer', 'assist1', 'assist2', 'situation', 'plus', 'minus', 'GF team roster', 'GA team roster']]
 
     schedule = get_json('http://cluster.leaguestat.com/feed/?feed=modulekit&view=schedule&key={0}&fmt=json&client_code={1}&lang=en&season_id={2}&team_id=undefined&league_code=&fmt=json'.format(api_key, league_codes[league], str(season)))['SiteKit']['Schedule']
 
