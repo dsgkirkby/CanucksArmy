@@ -1,6 +1,6 @@
 import argparse
 
-from modules import helpers, qmjhl, ohl
+from modules import helpers, chl
 
 
 def main():
@@ -12,10 +12,8 @@ def main():
 
     league = args.league.lower()
 
-    if league == 'qmjhl':
-        results_array = qmjhl.get_qmjhl_stats(args.season)
-    elif league == 'ohl':
-        results_array = ohl.get_ohl_stats(args.season)
+    if league == 'ohl' or league == 'qmjhl' or league == 'whl':
+        results_array = chl.get_season_stats(args.season, league)
     else:
         print('Invalid League')
         return
@@ -24,5 +22,5 @@ def main():
 
     print("Success!")
 
-
-main()
+if __name__ == '__main__':
+    main()

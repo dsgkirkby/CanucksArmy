@@ -16,3 +16,11 @@ def export_array_to_csv(array, name):
 
 def comma_delimited_list(string):
     return string.split(',')
+
+
+def flatten(thing):
+    return [item for sublist in thing for item in sublist]
+
+
+def listmap(iteratee, func):
+    return list(map(func, iteratee))

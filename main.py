@@ -103,5 +103,5 @@ def main():
 
     print("Success!")
 
-
-main()
+if __name__ == '__main__':
+    main()
