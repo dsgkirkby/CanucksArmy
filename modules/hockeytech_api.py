@@ -64,7 +64,7 @@ def get_game_info(game_info):
 
     # 0-0 game
     if game_summary['goals'] is None:
-        return []
+        return None
 
     home_score = 0
     away_score = 0
@@ -207,7 +207,7 @@ def get_season_stats(season, league, goals_results: list, penalties_results: lis
         game['playoff'] = season['playoff']
         return game
 
-    raw_results = pool.map(get_game_info, map(add_league_to_game, schedule))
+    raw_results = filter(lambda result: result is not None, pool.map(get_game_info, map(add_league_to_game, schedule)))
     (game_goal_results, game_penalty_results, game_result) = zip(*raw_results)
 
     goals_results += flatten(game_goal_results)
