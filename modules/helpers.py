@@ -1,5 +1,7 @@
 import csv
 import re
+import requests
+import json
 from unidecode import unidecode
 
 
@@ -26,5 +28,12 @@ def flatten(thing):
 def listmap(iteratee, func):
     return list(map(func, iteratee))
 
+
 def strip_extra_spaces(text):
     return re.sub(' +', ' ', text)
+
+
+def get_json(url):
+    request = requests.get(url)
+    decoder = json.JSONDecoder()
+    return decoder.decode(request.text)
