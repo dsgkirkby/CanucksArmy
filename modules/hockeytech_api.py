@@ -4,7 +4,7 @@ from modules.helpers import listmap, flatten, strip_extra_spaces, get_json, spli
 
 def get_league_code(league):
     if league == 'qmjhl':
-        return reversed(league)
+        return league[::-1]
     else:
         return league
 
