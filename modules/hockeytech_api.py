@@ -2,14 +2,18 @@ import multiprocessing
 from modules.helpers import listmap, flatten, strip_extra_spaces, get_json
 
 
-api_key = 'f109cf290fcf50d4'
+def get_league_code(league):
+    if league == 'qmjhl':
+        return reversed(league)
+    else:
+        return league
 
-league_codes = {
-    'qmjhl': 'lhjmq',
-    'ohl': 'ohl',
-    'whl': 'whl',
-    'ushl': 'ushl',
-}
+
+def get_api_key(league):
+    if league == 'ahl':
+        return 'c680916776709578'
+    else:
+        return 'f109cf290fcf50d4'
 
 
 def team_name(team):
@@ -29,7 +33,7 @@ def player_name(player):
 
 def get_game_info(game_info):
     league = game_info['league']
-    game_summary = get_json('http://cluster.leaguestat.com/feed/index.php?feed=gc&key={0}&client_code={1}&game_id={2}&lang_code=en&fmt=json&tab=gamesummary'.format(api_key, league_codes[league], game_info['game_id']))['GC']['Gamesummary']
+    game_summary = get_json('http://cluster.leaguestat.com/feed/index.php?feed=gc&key={0}&client_code={1}&game_id={2}&lang_code=en&fmt=json&tab=gamesummary'.format(get_api_key(league), get_league_code(league), game_info['game_id']))['GC']['Gamesummary']
 
     home_team = team_name(game_summary['visitor'])
     away_team = team_name(game_summary['home'])
@@ -104,7 +108,7 @@ def get_season_stats(season, league, results_array: list=None):
             'GA team roster'
         ]]
 
-    schedule = get_json('http://cluster.leaguestat.com/feed/?feed=modulekit&view=schedule&key={0}&fmt=json&client_code={1}&lang=en&season_id={2}&team_id=undefined&league_code=&fmt=json'.format(api_key, league_codes[league], season['season_id']))['SiteKit']['Schedule']
+    schedule = get_json('http://cluster.leaguestat.com/feed/?feed=modulekit&view=schedule&key={0}&fmt=json&client_code={1}&lang=en&season_id={2}&team_id=undefined&league_code=&fmt=json'.format(get_api_key(league), get_league_code(league), season['season_id']))['SiteKit']['Schedule']
 
     pool = multiprocessing.Pool(4)
 
