@@ -3,14 +3,13 @@ import argparse
 from modules import helpers, chl
 
 
+allowed_leagues = ['ohl', 'qmjhl', 'whl', 'ushl', 'bchl', 'sijhl, nojhl']
+
+
 def main():
     arg_parser = argparse.ArgumentParser(
-        description="Get all goals from a chosen chl league season.\n\n"
-                    "Earliest possible seasons:\n"
-                    "OHL: 1997-98\n"
-                    "WHL: 1996-97\n"
-                    "QMJHL: 1969-70\n"
-                    "USHL: 2002-03\n",
+        description="Get all goals from a chosen chl league season.\n"
+                    "Allowed Leagues: {0}".format(", ".join(allowed_leagues)),
         formatter_class=argparse.RawTextHelpFormatter
     )
     arg_parser.add_argument('leagues', type=helpers.comma_delimited_list, help="CHL leagues to scrape")
@@ -28,7 +27,7 @@ def main():
 
         league = raw_league.lower()
 
-        if league not in ['ohl', 'qmjhl', 'whl', 'ushl']:
+        if league not in allowed_leagues:
             print('Invalid League: {0}'.format(league))
             return
 
