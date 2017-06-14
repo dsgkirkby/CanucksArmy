@@ -1,5 +1,8 @@
 import multiprocessing
-from modules.helpers import listmap, flatten, strip_extra_spaces, get_json, split_tuple_array
+from modules.helpers import listmap, flatten, strip_extra_spaces, get_json
+
+
+SECONDS_PER_MINUTE = 60
 
 
 def get_league_code(league):
@@ -35,15 +38,29 @@ def get_game_info(game_info):
     league = game_info['league']
     game_summary = get_json('http://cluster.leaguestat.com/feed/index.php?feed=gc&key={0}&client_code={1}&game_id={2}&lang_code=en&fmt=json&tab=gamesummary'.format(get_api_key(league), get_league_code(league), game_info['game_id']))['GC']['Gamesummary']
 
-    home_team = team_name(game_summary['visitor'])
-    away_team = team_name(game_summary['home'])
+    home_team = team_name(game_summary['home'])
+    away_team = team_name(game_summary['visitor'])
 
     home_roster = team_roster(game_summary['home_team_lineup']) if type(game_summary['home_team_lineup']) is not list else ''
     away_roster = team_roster(game_summary['visitor_team_lineup']) if type(game_summary['visitor_team_lineup']) is not list else ''
 
+    is_playoff_game = game_info['playoff'] == '1'
     season = game_info['season']
-    season_type = 'Playoffs' if game_info['playoff'] == '1' else 'Season'
+    season_type = 'Playoffs' if is_playoff_game else 'Season'
     game_id = game_info['game_id']
+    date = game_summary['meta']['date_played']
+    home_goals = game_summary['totalGoals']['visitor']
+    away_goals = game_summary['totalGoals']['home']
+    end_clock = game_summary['meta']['game_clock']
+    end_period = game_summary['meta']['period']
+    regular_icetime_seconds = 3 * 20 * SECONDS_PER_MINUTE
+    overtime_icetime_seconds = (
+        (int(end_period) - 3)  # Number of OT periods
+        * (20 if is_playoff_game else 5)  # Length of OT period
+        * SECONDS_PER_MINUTE
+        - (int(end_clock[3:5]) * SECONDS_PER_MINUTE + int(end_clock[6:8]))  # Remaining time if OT goal was scored
+    )
+    total_icetime_seconds = regular_icetime_seconds + overtime_icetime_seconds
 
     # 0-0 game
     if game_summary['goals'] is None:
@@ -61,9 +78,7 @@ def get_game_info(game_info):
             season_type,
             league,
             game_id,
-            game_summary['game_date'],
-            away_team,
-            home_team,
+            date,
             home_team if is_home_goal else away_team,
             home_team if not is_home_goal else away_team,
             goal['period_id'],
@@ -75,8 +90,6 @@ def get_game_info(game_info):
             (str(len(goal['plus'])) + 'v' + str(len(goal['minus']))) if len(goal['plus']) > 0 else '5v4',
             ",".join(listmap(goal['plus'], player_name)),
             ",".join(listmap(goal['minus'], player_name)),
-            home_roster if is_home_goal else away_roster,
-            home_roster if not is_home_goal else away_roster,
         ]
         if is_home_goal:
             home_score += 1
@@ -104,13 +117,32 @@ def get_game_info(game_info):
             '',  # TODO strength
         ]
 
+    game_result = [
+        season,
+        season_type,
+        league,
+        game_id,
+        date,
+        away_team,
+        home_team,
+        game_summary['totalGoals']['visitor'],
+        game_summary['totalGoals']['home'],
+        home_team if home_goals > away_goals else away_team,
+        home_team if home_goals < away_goals else away_team,
+        away_roster,
+        home_roster,
+        total_icetime_seconds / 60,
+        '',  # TODO 5v5 icetime
+    ]
+
     return (
         listmap(game_summary['goals'], convert_goal),
-        listmap(filter(filter_penalty, game_summary['penalties']), convert_penalty)
+        listmap(filter(filter_penalty, game_summary['penalties']), convert_penalty),
+        game_result,
     )
 
 
-def get_season_stats(season, league, goals_results: list, penalties_results: list):
+def get_season_stats(season, league, goals_results: list, penalties_results: list, games_results: list):
     if len(goals_results) is 0:
         goals_results.append([
             'Season',
@@ -118,8 +150,6 @@ def get_season_stats(season, league, goals_results: list, penalties_results: lis
             'League',
             'GameID',
             'date',
-            'visiting team',
-            'home team',
             'GF team',
             'GA team',
             'period',
@@ -131,8 +161,6 @@ def get_season_stats(season, league, goals_results: list, penalties_results: lis
             'situation',
             'plus',
             'minus',
-            'GF team roster',
-            'GA team roster'
         ])
 
     if len(penalties_results) is 0:
@@ -150,6 +178,25 @@ def get_season_stats(season, league, goals_results: list, penalties_results: lis
             'Strength',
         ])
 
+    if len(games_results) is 0:
+        games_results.append([
+            'Season',
+            'Season Type',
+            'League',
+            'GameID',
+            'Date',
+            'Visiting Team',
+            'Home Team',
+            'Visitor GF',
+            'Home GF',
+            'Winning Team',
+            'Losing Team',
+            'Visitor Roster',
+            'Home Roster',
+            'Total Time',
+            '5v5 Time',
+        ])
+
     schedule = get_json('http://cluster.leaguestat.com/feed/?feed=modulekit&view=schedule&key={0}&fmt=json&client_code={1}&lang=en&season_id={2}&team_id=undefined&league_code=&fmt=json'.format(get_api_key(league), get_league_code(league), season['season_id']))['SiteKit']['Schedule']
 
     pool = multiprocessing.Pool(4)
@@ -161,7 +208,8 @@ def get_season_stats(season, league, goals_results: list, penalties_results: lis
         return game
 
     raw_results = pool.map(get_game_info, map(add_league_to_game, schedule))
-    (game_goal_results, game_penalty_results) = split_tuple_array(raw_results)
+    (game_goal_results, game_penalty_results, game_result) = zip(*raw_results)
 
     goals_results += flatten(game_goal_results)
     penalties_results += flatten(game_penalty_results)
+    games_results += game_result
