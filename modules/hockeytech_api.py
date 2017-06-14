@@ -62,10 +62,6 @@ def get_game_info(game_info):
     )
     total_icetime_seconds = regular_icetime_seconds + overtime_icetime_seconds
 
-    # 0-0 game
-    if game_summary['goals'] is None:
-        return None
-
     home_score = 0
     away_score = 0
 
@@ -100,7 +96,8 @@ def get_game_info(game_info):
     def filter_penalty(penalty):
         # Some penalties weirdly have empty player info, with player_id: -1
         # Bench penalties have player_id: 0, and we want to keep them
-        return int(penalty['player_penalized_info']['player_id']) > -1
+        penalized_player_info = penalty['player_penalized_info']
+        return 'player_id' in penalized_player_info and int(penalized_player_info['player_id']) > -1
 
     def convert_penalty(penalty):
         return [
@@ -136,8 +133,8 @@ def get_game_info(game_info):
     ]
 
     return (
-        listmap(game_summary['goals'], convert_goal),
-        listmap(filter(filter_penalty, game_summary['penalties']), convert_penalty),
+        listmap(game_summary['goals'], convert_goal) if game_summary['goals'] is not None else [],
+        listmap(filter(filter_penalty, game_summary['penalties']), convert_penalty) if game_summary['penalties'] is not None else [],
         game_result,
     )
 
@@ -207,7 +204,7 @@ def get_season_stats(season, league, goals_results: list, penalties_results: lis
         game['playoff'] = season['playoff']
         return game
 
-    raw_results = filter(lambda result: result is not None, pool.map(get_game_info, map(add_league_to_game, schedule)))
+    raw_results = pool.map(get_game_info, map(add_league_to_game, schedule))
     (game_goal_results, game_penalty_results, game_result) = zip(*raw_results)
 
     goals_results += flatten(game_goal_results)
