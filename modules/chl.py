@@ -8,6 +8,7 @@ league_codes = {
     'qmjhl': 'lhjmq',
     'ohl': 'ohl',
     'whl': 'whl',
+    'ushl': 'ushl',
 }
 
 

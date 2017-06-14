@@ -9,7 +9,8 @@ def main():
                     "Earliest possible seasons:\n"
                     "OHL: 1997-98\n"
                     "WHL: 1996-97\n"
-                    "QMJHL: 1969-70",
+                    "QMJHL: 1969-70\n"
+                    "USHL: 2002-03\n",
         formatter_class=argparse.RawTextHelpFormatter
     )
     arg_parser.add_argument('leagues', type=helpers.comma_delimited_list, help="CHL leagues to scrape")
@@ -27,7 +28,7 @@ def main():
 
         league = raw_league.lower()
 
-        if league not in ['ohl', 'qmjhl', 'whl']:
+        if league not in ['ohl', 'qmjhl', 'whl', 'ushl']:
             print('Invalid League: {0}'.format(league))
             return
 
