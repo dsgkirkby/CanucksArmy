@@ -38,8 +38,8 @@ def get_game_info(game_info):
     league = game_info['league']
     game_summary = get_json('http://cluster.leaguestat.com/feed/index.php?feed=gc&key={0}&client_code={1}&game_id={2}&lang_code=en&fmt=json&tab=gamesummary'.format(get_api_key(league), get_league_code(league), game_info['game_id']))['GC']['Gamesummary']
 
-    home_team = team_name(game_summary['visitor'])
-    away_team = team_name(game_summary['home'])
+    home_team = team_name(game_summary['home'])
+    away_team = team_name(game_summary['visitor'])
 
     home_roster = team_roster(game_summary['home_team_lineup']) if type(game_summary['home_team_lineup']) is not list else ''
     away_roster = team_roster(game_summary['visitor_team_lineup']) if type(game_summary['visitor_team_lineup']) is not list else ''
@@ -48,7 +48,7 @@ def get_game_info(game_info):
     season = game_info['season']
     season_type = 'Playoffs' if is_playoff_game else 'Season'
     game_id = game_info['game_id']
-    date = game_summary['game_date']
+    date = game_summary['meta']['date_played']
     home_goals = game_summary['totalGoals']['visitor']
     away_goals = game_summary['totalGoals']['home']
     end_clock = game_summary['meta']['game_clock']
@@ -79,8 +79,6 @@ def get_game_info(game_info):
             league,
             game_id,
             date,
-            away_team,
-            home_team,
             home_team if is_home_goal else away_team,
             home_team if not is_home_goal else away_team,
             goal['period_id'],
@@ -92,8 +90,6 @@ def get_game_info(game_info):
             (str(len(goal['plus'])) + 'v' + str(len(goal['minus']))) if len(goal['plus']) > 0 else '5v4',
             ",".join(listmap(goal['plus'], player_name)),
             ",".join(listmap(goal['minus'], player_name)),
-            home_roster if is_home_goal else away_roster,
-            home_roster if not is_home_goal else away_roster,
         ]
         if is_home_goal:
             home_score += 1
@@ -154,8 +150,6 @@ def get_season_stats(season, league, goals_results: list, penalties_results: lis
             'League',
             'GameID',
             'date',
-            'visiting team',
-            'home team',
             'GF team',
             'GA team',
             'period',
@@ -167,8 +161,6 @@ def get_season_stats(season, league, goals_results: list, penalties_results: lis
             'situation',
             'plus',
             'minus',
-            'GF team roster',
-            'GA team roster'
         ])
 
     if len(penalties_results) is 0:
