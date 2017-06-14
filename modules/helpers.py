@@ -29,6 +29,10 @@ def listmap(iteratee, func):
     return list(map(func, iteratee))
 
 
+def split_tuple_array(tuple_array):
+    return [a for a, b in tuple_array], [b for a, b in tuple_array]
+
+
 def strip_extra_spaces(text):
     return re.sub(' +', ' ', text)
 

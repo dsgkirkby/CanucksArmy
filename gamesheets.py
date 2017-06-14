@@ -21,7 +21,8 @@ def main():
     start_season = args.start_season
     end_season = args.range if args.range is not None else args.start_season
 
-    results_array = []
+    goals_results = []
+    penalties_results = []
 
     for raw_league in args.leagues:
 
@@ -44,11 +45,18 @@ def main():
 
         for season in reversed(list(selected_seasons)):
             print('Collecting ' + league.upper() + ' ' + season['season_name'] + '...', end='', flush=True)
-            hockeytech_api.get_season_stats(season, league, results_array)
-            print(' done.')
+            hockeytech_api.get_season_stats(season, league, goals_results, penalties_results)
+            print('done.')
 
-    helpers.export_array_to_csv(results_array, '{0}-{1}-{2}.csv'.format('-'.join(args.leagues), start_season, end_season))
-    print("Success! {0} results found.".format(len(results_array)))
+    helpers.export_array_to_csv(
+        goals_results,
+        '{0}-{1}-{2}-goals.csv'.format('-'.join(args.leagues), start_season, end_season)
+    )
+    helpers.export_array_to_csv(
+        penalties_results,
+        '{0}-{1}-{2}-penalties.csv'.format('-'.join(args.leagues), start_season, end_season)
+    )
+    print("Success!")
 
 if __name__ == '__main__':
     main()

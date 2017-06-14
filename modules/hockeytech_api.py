@@ -1,5 +1,5 @@
 import multiprocessing
-from modules.helpers import listmap, flatten, strip_extra_spaces, get_json
+from modules.helpers import listmap, flatten, strip_extra_spaces, get_json, split_tuple_array
 
 
 def get_league_code(league):
@@ -41,6 +41,10 @@ def get_game_info(game_info):
     home_roster = team_roster(game_summary['home_team_lineup']) if type(game_summary['home_team_lineup']) is not list else ''
     away_roster = team_roster(game_summary['visitor_team_lineup']) if type(game_summary['visitor_team_lineup']) is not list else ''
 
+    season = game_info['season']
+    season_type = 'Playoffs' if game_info['playoff'] == '1' else 'Season'
+    game_id = game_info['game_id']
+
     # 0-0 game
     if game_summary['goals'] is None:
         return []
@@ -53,10 +57,10 @@ def get_game_info(game_info):
 
         is_home_goal = goal['home'] == '1'
         to_return = [
-            game_info['season'],
-            'Playoffs' if game_info['playoff'] == '1' else 'Season',
-            game_info['league'],
-            game_info['game_id'],
+            season,
+            season_type,
+            league,
+            game_id,
             game_summary['game_date'],
             away_team,
             home_team,
@@ -80,12 +84,35 @@ def get_game_info(game_info):
             away_score += 1
         return to_return
 
-    return listmap(game_summary['goals'], convert_goal)
+    def filter_penalty(penalty):
+        # Some penalties weirdly have empty player info, with player_id: -1
+        # Bench penalties have player_id: 0, and we want to keep them
+        return int(penalty['player_penalized_info']['player_id']) > -1
+
+    def convert_penalty(penalty):
+        return [
+            season,
+            season_type,
+            league,
+            game_id,
+            home_team if penalty['home'] == '1' else away_team,
+            'Bench' if penalty['bench'] == '1' else player_name(penalty['player_penalized_info']),
+            penalty['lang_penalty_description'],
+            penalty['minutes'],
+            penalty['period_id'],
+            penalty['time_off_formatted'],
+            '',  # TODO strength
+        ]
+
+    return (
+        listmap(game_summary['goals'], convert_goal),
+        listmap(filter(filter_penalty, game_summary['penalties']), convert_penalty)
+    )
 
 
-def get_season_stats(season, league, results_array: list=None):
-    if results_array is None:
-        results_array = [[
+def get_season_stats(season, league, goals_results: list, penalties_results: list):
+    if len(goals_results) is 0:
+        goals_results.append([
             'Season',
             'Season Type',
             'League',
@@ -106,7 +133,22 @@ def get_season_stats(season, league, results_array: list=None):
             'minus',
             'GF team roster',
             'GA team roster'
-        ]]
+        ])
+
+    if len(penalties_results) is 0:
+        penalties_results.append([
+            'Season',
+            'Season Type',
+            'League',
+            'GameID',
+            'Team',
+            'Player',
+            'Offense',
+            'Minutes',
+            'Period',
+            'Time',
+            'Strength',
+        ])
 
     schedule = get_json('http://cluster.leaguestat.com/feed/?feed=modulekit&view=schedule&key={0}&fmt=json&client_code={1}&lang=en&season_id={2}&team_id=undefined&league_code=&fmt=json'.format(get_api_key(league), get_league_code(league), season['season_id']))['SiteKit']['Schedule']
 
@@ -118,6 +160,8 @@ def get_season_stats(season, league, results_array: list=None):
         game['playoff'] = season['playoff']
         return game
 
-    game_results = pool.map(get_game_info, map(add_league_to_game, schedule))
+    raw_results = pool.map(get_game_info, map(add_league_to_game, schedule))
+    (game_goal_results, game_penalty_results) = split_tuple_array(raw_results)
 
-    results_array += flatten(game_results)
+    goals_results += flatten(game_goal_results)
+    penalties_results += flatten(game_penalty_results)
