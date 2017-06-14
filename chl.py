@@ -4,7 +4,14 @@ from modules import helpers, chl
 
 
 def main():
-    arg_parser = argparse.ArgumentParser(description="Get all goals from a chosen chl league season")
+    arg_parser = argparse.ArgumentParser(
+        description="Get all goals from a chosen chl league season.\n\n"
+                    "Earliest possible seasons:\n"
+                    "OHL: 1997-98\n"
+                    "WHL: 1996-97\n"
+                    "QMJHL: 1969-70",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
     arg_parser.add_argument('leagues', type=helpers.comma_delimited_list, help="CHL leagues to scrape")
     arg_parser.add_argument('start_season', type=int, help="Starting season (i.e. 2018 for 2017-18)")
     arg_parser.add_argument('--range', type=int, help="Ending season", required=False)

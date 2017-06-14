@@ -49,6 +49,7 @@ def get_game_info(game_info):
         is_home_goal = goal['home'] == '1'
         to_return = [
             game_info['season'],
+            'Playoffs' if game_info['playoff'] == '1' else 'Season',
             game_info['league'],
             game_info['game_id'],
             game_summary['game_date'],
@@ -81,6 +82,7 @@ def get_season_stats(season, league, results_array: list=None):
     if results_array is None:
         results_array = [[
             'Season',
+            'Season Type',
             'League',
             'GameID',
             'date',
@@ -108,6 +110,7 @@ def get_season_stats(season, league, results_array: list=None):
     def add_league_to_game(game):
         game['league'] = league
         game['season'] = season['end_date'][0:4]
+        game['playoff'] = season['playoff']
         return game
 
     game_results = pool.map(get_game_info, map(add_league_to_game, schedule))
