@@ -1,9 +1,11 @@
 import multiprocessing
 import functools
+import re
 from modules.helpers import listmap, flatten, strip_extra_spaces, get_json
 
 
 SECONDS_PER_MINUTE = 60
+height_regex = re.compile('([3-8])[^\d]{0,2}([0-9]+)?')
 
 
 def get_league_code(league):
@@ -32,7 +34,27 @@ def team_roster(team_lineup):
 
 
 def player_name(player):
-    return strip_extra_spaces((player['first_name'] + ' ' + player['last_name']) if player['player_id'] is not None else '')
+    return strip_extra_spaces(
+        (player['first_name'] + ' ' + player['last_name']) if player['player_id'] is not None else ''
+    )
+
+
+def player_height(player):
+    raw = player['height']
+
+    if len(raw) is 0:
+        return ''
+
+    regex_result = height_regex.search(raw)
+
+    if regex_result is None:
+        print("Unrecognized height format: {0}".format(raw))
+        return ''
+
+    (feet, *inches) = regex_result.groups()
+    inches = inches[0] if len(inches) > 0 and inches[0] is not None else '0'
+    inches = '0' + inches if len(inches) == '1' else inches
+    return feet + '.' + inches
 
 
 def season_type_label(season):
@@ -102,6 +124,9 @@ def get_game_info(game_info, season_info, league):
         return to_return
 
     def filter_penalty(penalty):
+        if 'player_penalized_info' not in penalty:
+            return False
+
         # Some penalties weirdly have empty player info, with player_id: -1
         # Bench penalties have player_id: 0, and we want to keep them
         penalized_player_info = penalty['player_penalized_info']
@@ -142,12 +167,21 @@ def get_game_info(game_info, season_info, league):
 
     return (
         listmap(game_summary['goals'], convert_goal) if game_summary['goals'] is not None else [],
-        listmap(filter(filter_penalty, game_summary['penalties']), convert_penalty) if game_summary['penalties'] is not None else [],
+        listmap(filter(filter_penalty, game_summary['penalties']), convert_penalty)
+        if game_summary['penalties'] is not None else
+        [],
         game_result,
     )
 
 
-def get_season_stats(season, league, goals_results: list, penalties_results: list, games_results: list, players_results: list):
+def get_season_stats(
+        season,
+        league,
+        goals_results: list,
+        penalties_results: list,
+        games_results: list,
+        players_results: list
+):
     if len(goals_results) is 0:
         goals_results.append([
             'Season',
@@ -234,7 +268,7 @@ def get_season_stats(season, league, goals_results: list, penalties_results: lis
             player['age'],
             player['birthdate'],
             player['homeplace'],
-            player['height'],
+            player_height(player),
             player['weight'],
             player['shoots'],
             player['games_played'],
@@ -242,7 +276,7 @@ def get_season_stats(season, league, goals_results: list, penalties_results: lis
 
     season_players = listmap(players, convert_player)
 
-    raw_results = multiprocessing.Pool(4).map(
+    raw_results = multiprocessing.Pool(6).map(
         functools.partial(get_game_info, season_info=season, league=league),
         schedule
     )
