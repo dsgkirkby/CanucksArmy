@@ -1,4 +1,5 @@
 import multiprocessing
+import functools
 from modules.helpers import listmap, flatten, strip_extra_spaces, get_json
 
 
@@ -34,8 +35,16 @@ def player_name(player):
     return strip_extra_spaces((player['first_name'] + ' ' + player['last_name']) if player['player_id'] is not None else '')
 
 
-def get_game_info(game_info):
-    league = game_info['league']
+def season_type_label(season):
+    is_playoffs = season['playoff'] == '1'
+    return is_playoffs, 'Playoffs' if season['playoff'] == '1' else 'Season'
+
+
+def season_year(season):
+    return season['end_date'][0:4]
+
+
+def get_game_info(game_info, season_info, league):
     game_summary = get_json('http://cluster.leaguestat.com/feed/index.php?feed=gc&key={0}&client_code={1}&game_id={2}&lang_code=en&fmt=json&tab=gamesummary'.format(get_api_key(league), get_league_code(league), game_info['game_id']))['GC']['Gamesummary']
 
     home_team = team_name(game_summary['home'])
@@ -44,9 +53,8 @@ def get_game_info(game_info):
     home_roster = team_roster(game_summary['home_team_lineup']) if type(game_summary['home_team_lineup']) is not list else ''
     away_roster = team_roster(game_summary['visitor_team_lineup']) if type(game_summary['visitor_team_lineup']) is not list else ''
 
-    is_playoff_game = game_info['playoff'] == '1'
-    season = game_info['season']
-    season_type = 'Playoffs' if is_playoff_game else 'Season'
+    season = season_year(season_info)
+    is_playoff_game, season_type = season_type_label(season_info)
     game_id = game_info['game_id']
     date = game_summary['meta']['date_played']
     home_goals = game_summary['totalGoals']['visitor']
@@ -139,7 +147,7 @@ def get_game_info(game_info):
     )
 
 
-def get_season_stats(season, league, goals_results: list, penalties_results: list, games_results: list):
+def get_season_stats(season, league, goals_results: list, penalties_results: list, games_results: list, players_results: list):
     if len(goals_results) is 0:
         goals_results.append([
             'Season',
@@ -194,19 +202,53 @@ def get_season_stats(season, league, goals_results: list, penalties_results: lis
             '5v5 Time',
         ])
 
+    if len(players_results) is 0:
+        players_results.append([
+            'Player',
+            'Position',
+            'Season',
+            'Season Type',
+            'League',
+            'Age',
+            'Birthdate',
+            'Birthplace',
+            'Height',
+            'Weight',
+            'Shot',
+            'GP',
+        ])
+
     schedule = get_json('http://cluster.leaguestat.com/feed/?feed=modulekit&view=schedule&key={0}&fmt=json&client_code={1}&lang=en&season_id={2}&team_id=undefined&league_code=&fmt=json'.format(get_api_key(league), get_league_code(league), season['season_id']))['SiteKit']['Schedule']
 
-    pool = multiprocessing.Pool(4)
+    players = get_json('http://cluster.leaguestat.com/feed/?feed=modulekit&view=statviewtype&type=topscorers&key={0}&fmt=json&client_code={1}&lang=en&league_code=&season_id={2}&first=0&limit=10000&sort=points&stat=all&order_direction='.format(get_api_key(league), get_league_code(league), season['season_id']))['SiteKit']['Statviewtype']
 
-    def add_league_to_game(game):
-        game['league'] = league
-        game['season'] = season['end_date'][0:4]
-        game['playoff'] = season['playoff']
-        return game
+    (_, season_type) = season_type_label(season)
 
-    raw_results = pool.map(get_game_info, map(add_league_to_game, schedule))
+    def convert_player(player):
+        return [
+            player_name(player),
+            player['position'],
+            season_year(season),
+            season_type,
+            league,
+            player['age'],
+            player['birthdate'],
+            player['homeplace'],
+            player['height'],
+            player['weight'],
+            player['shoots'],
+            player['games_played'],
+        ]
+
+    season_players = listmap(players, convert_player)
+
+    raw_results = multiprocessing.Pool(4).map(
+        functools.partial(get_game_info, season_info=season, league=league),
+        schedule
+    )
     (game_goal_results, game_penalty_results, game_result) = zip(*raw_results)
 
     goals_results += flatten(game_goal_results)
     penalties_results += flatten(game_penalty_results)
     games_results += game_result
+    players_results += season_players

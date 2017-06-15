@@ -24,6 +24,7 @@ def main():
     goals_results = []
     penalties_results = []
     games_results = []
+    players_results = []
 
     for raw_league in args.leagues:
 
@@ -52,7 +53,9 @@ def main():
 
         for season in reversed(list(selected_seasons)):
             print('Collecting ' + league.upper() + ' ' + season['season_name'] + '...', end='', flush=True)
-            hockeytech_api.get_season_stats(season, league, goals_results, penalties_results, games_results)
+            hockeytech_api.get_season_stats(
+                season, league, goals_results, penalties_results, games_results, players_results
+            )
             print('done.')
 
     helpers.export_array_to_csv(
@@ -66,6 +69,10 @@ def main():
     helpers.export_array_to_csv(
         games_results,
         '{0}-{1}-{2}-games.csv'.format('-'.join(args.leagues), start_season, end_season)
+    )
+    helpers.export_array_to_csv(
+        players_results,
+        '{0}-{1}-{2}-players.csv'.format('-'.join(args.leagues), start_season, end_season)
     )
     print("Success!")
 
