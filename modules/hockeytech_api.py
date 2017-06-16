@@ -57,6 +57,13 @@ def player_height(player):
     return feet + '.' + inches
 
 
+def player_team(player):
+    if int(player['num_teams']) > 1:
+        return ' / '.join(listmap(player['team_breakdown'], lambda team: team['team_name'].strip()))
+    else:
+        return player['team_name']
+
+
 def season_type_label(season):
     is_playoffs = season['playoff'] == '1'
     return is_playoffs, 'Playoffs' if season['playoff'] == '1' else 'Season'
@@ -243,6 +250,7 @@ def get_season_stats(
             'Season',
             'Season Type',
             'League',
+            'Team',
             'Age',
             'Birthdate',
             'Birthplace',
@@ -265,6 +273,7 @@ def get_season_stats(
             season_year(season),
             season_type,
             league,
+            player_team(player),
             player['age'],
             player['birthdate'],
             player['homeplace'],
