@@ -4,7 +4,7 @@ import re
 from modules.helpers import listmap, flatten, strip_extra_spaces, get_json
 
 
-# Treat double minors as if they behave like majors for simplicity
+# We treat double minors as if they behave like majors for simplicity TODO fix
 MAJOR_PENALTY_TYPES = ['Major', 'Match', 'Double Minor']
 PENALTY_END = 'penalty_end'
 SECONDS_PER_MINUTE = 60
@@ -91,16 +91,6 @@ def get_game_info(game_info, season_info, league):
     date = game_summary['meta']['date_played']
     home_goals = game_summary['totalGoals']['visitor']
     away_goals = game_summary['totalGoals']['home']
-    end_clock = game_summary['meta']['game_clock']
-    end_period = game_summary['meta']['period']
-    regular_icetime_seconds = 3 * 20 * SECONDS_PER_MINUTE
-    overtime_icetime_seconds = (
-        (int(end_period) - 3)  # Number of OT periods
-        * (20 if is_playoff_game else 5)  # Length of OT period
-        * SECONDS_PER_MINUTE
-        - (int(end_clock[3:5]) * SECONDS_PER_MINUTE + int(end_clock[6:8]))  # Remaining time if OT goal was scored
-    )
-    total_icetime_seconds = regular_icetime_seconds + overtime_icetime_seconds
 
     home_score = 0
     away_score = 0
@@ -157,34 +147,14 @@ def get_game_info(game_info, season_info, league):
             penalty['strength'],
         ]
 
-    game_result = [
-        season,
-        season_type,
-        league,
-        game_id,
-        date,
-        away_team,
-        home_team,
-        game_summary['totalGoals']['visitor'],
-        game_summary['totalGoals']['home'],
-        home_team if home_goals > away_goals else away_team,
-        home_team if home_goals < away_goals else away_team,
-        away_roster,
-        home_roster,
-        total_icetime_seconds / 60,
-        '',  # TODO 5v5 icetime
-    ]
-
     goals = game_summary['goals'] if game_summary['goals'] is not None else []
     penalties = game_summary['penalties'] if game_summary['penalties'] is not None else []
 
     def get_time(x):
-        time = (x['time_off_formatted'] if 'time_off_formatted' in x else x['time'])
+        time = x['time_off_formatted'] if 'time_off_formatted' in x else x['time']
         return x['period_id'] + ' ' + (time if len(time) is 5 else ('0' + time))
 
     def get_penalty_end(penalty):
-        if penalty['pp'] == '1' and penalty['penalty_class'] not in ['Major', 'Minor']:
-            print(game_id + ': ' + penalty['penalty_class'])
         minute_start = int(penalty['time_off_formatted'][:-3])
         second_start = penalty['time_off_formatted'][-2:]
         period_start = int(penalty['period_id'])
@@ -211,6 +181,11 @@ def get_game_info(game_info, season_info, league):
         key=get_time
     )
 
+    ev_5v5_icetime = {
+        'seconds': 0,
+        'last_event_time': '0:00',
+        'last_event_period': 1,
+    }
     minor_penalties = {
         'home': 0,
         'away': 0,
@@ -224,6 +199,32 @@ def get_game_info(game_info, season_info, league):
         'away': 0,
     }
 
+    def track_event_5v5_icetime(event, is_5v5: bool):
+        time = (event['time_off_formatted']
+                if 'time_off_formatted' in event
+                else event['time'])
+        minute_start = int(ev_5v5_icetime['last_event_time'][:-3])
+        second_start = int(ev_5v5_icetime['last_event_time'][-2:])
+        period_start = int(ev_5v5_icetime['last_event_period'])
+        minute_end = int(time[:-3])
+        second_end = int(time[-2:])
+        period_end = int(event['period_id'])
+
+        icetime = (
+            (period_end - period_start) * 20 * SECONDS_PER_MINUTE +
+            (minute_end - minute_start) * SECONDS_PER_MINUTE +
+            (second_end - second_start)
+        )
+
+        ev_5v5_icetime['last_event_period'] = period_end
+        ev_5v5_icetime['last_event_time'] = time
+
+        if is_5v5:
+            ev_5v5_icetime['seconds'] += icetime
+
+    def get_strength(team):
+        return str(min(5, max(3, 5 - minor_penalties[team] - major_penalties[team])))
+
     def add_strength_to_goal_or_penalty(goal_or_penalty, minor_penalties, major_penalties, recent_powerplay_goals):
         primary_team = 'home' if goal_or_penalty['home'] == '1' else 'away'
         opposition_team = 'home' if goal_or_penalty['home'] == '0' else 'away'
@@ -231,11 +232,10 @@ def get_game_info(game_info, season_info, league):
         is_penalty = goal_or_penalty['event'] == 'penalty'
         is_penalty_end = goal_or_penalty['event'] == PENALTY_END
 
-        def get_strength(team):
-            return str(min(5, max(3, 5 - minor_penalties[team] - major_penalties[team])))
-
         primary_strength = get_strength(primary_team)
         opposition_strength = get_strength(opposition_team)
+
+        track_event_5v5_icetime(goal_or_penalty, primary_strength == opposition_strength == '5')
 
         if is_goal and len(goal_or_penalty['plus']) > 0:
             goal_or_penalty['strength'] = (
@@ -272,6 +272,56 @@ def get_game_info(game_info, season_info, league):
         major_penalties=major_penalties,
         recent_powerplay_goals=recent_powerplay_goals,
     ))
+
+    end_clock = game_summary['meta']['game_clock']
+    end_minute = int(end_clock[3:5])
+    end_second = int(end_clock[6:8])
+    end_period = game_summary['meta']['period']
+    regular_icetime_seconds = 3 * 20 * SECONDS_PER_MINUTE
+    ot_period_length = 20 if is_playoff_game else 5
+    overtime_icetime_seconds = (
+        (int(end_period) - 3)  # Number of OT periods
+        * ot_period_length
+        * SECONDS_PER_MINUTE
+        - (end_minute * SECONDS_PER_MINUTE + end_second)  # Remaining time if OT goal was scored
+    )
+    total_icetime_seconds = regular_icetime_seconds + overtime_icetime_seconds
+
+    end_minute_from_start = (ot_period_length if end_period != '3' else 20) - end_minute
+    end_second_from_start = - end_second
+    if end_second_from_start < 0:
+        end_minute_from_start -= 1
+        end_second_from_start += 60
+
+    # Add any 5v5 icetime at the end of the game
+    track_event_5v5_icetime(
+        {
+            'time':
+                str(end_minute_from_start) +
+                ':' +
+                ('0' if end_second_from_start < 10 else '') + str(end_second_from_start),
+            'period_id': end_period
+        },
+        get_strength('home') == get_strength('away') == '5'
+    )
+
+    game_result = [
+        season,
+        season_type,
+        league,
+        game_id,
+        date,
+        away_team,
+        home_team,
+        game_summary['totalGoals']['visitor'],
+        game_summary['totalGoals']['home'],
+        home_team if home_goals > away_goals else away_team,
+        home_team if home_goals < away_goals else away_team,
+        away_roster,
+        home_roster,
+        total_icetime_seconds / SECONDS_PER_MINUTE,
+        ev_5v5_icetime['seconds'] / SECONDS_PER_MINUTE,
+    ]
 
     return (
         listmap(goals, convert_goal),
