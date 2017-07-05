@@ -4,6 +4,9 @@ import re
 from modules.helpers import listmap, flatten, strip_extra_spaces, get_json
 
 
+# Treat double minors as if they behave like majors for simplicity
+MAJOR_PENALTY_TYPES = ['Major', 'Match', 'Double Minor']
+PENALTY_END = 'penalty_end'
 SECONDS_PER_MINUTE = 60
 height_regex = re.compile('([3-8])[^\d]{0,2}([0-9]+)?')
 
@@ -120,7 +123,7 @@ def get_game_info(game_info, season_info, league):
             player_name(goal['assist1_player']),
             player_name(goal['assist2_player']),
             home_score - away_score if is_home_goal else away_score - home_score,
-            (str(len(goal['plus'])) + 'v' + str(len(goal['minus']))) if len(goal['plus']) > 0 else '5v4',
+            goal['strength'],
             ",".join(listmap(goal['plus'], player_name)),
             ",".join(listmap(goal['minus'], player_name)),
         ]
@@ -151,7 +154,7 @@ def get_game_info(game_info, season_info, league):
             penalty['minutes'],
             penalty['period_id'],
             penalty['time_off_formatted'],
-            '',  # TODO strength
+            penalty['strength'],
         ]
 
     game_result = [
@@ -172,11 +175,107 @@ def get_game_info(game_info, season_info, league):
         '',  # TODO 5v5 icetime
     ]
 
+    goals = game_summary['goals'] if game_summary['goals'] is not None else []
+    penalties = game_summary['penalties'] if game_summary['penalties'] is not None else []
+
+    def get_time(x):
+        time = (x['time_off_formatted'] if 'time_off_formatted' in x else x['time'])
+        return x['period_id'] + ' ' + (time if len(time) is 5 else ('0' + time))
+
+    def get_penalty_end(penalty):
+        if penalty['pp'] == '1' and penalty['penalty_class'] not in ['Major', 'Minor']:
+            print(game_id + ': ' + penalty['penalty_class'])
+        minute_start = int(penalty['time_off_formatted'][:-3])
+        second_start = penalty['time_off_formatted'][-2:]
+        period_start = int(penalty['period_id'])
+        minute_end = minute_start + penalty['minutes']
+        period_end = period_start
+
+        if minute_end > 20 or minute_end == 20 and second_start != '00':
+            period_end += 1
+            minute_end -= 20
+
+        return {
+            'event': PENALTY_END,
+            'period_id': str(period_end),
+            'time': str(minute_end) + ':' + second_start,
+            'pp': penalty['pp'],
+            'home': penalty['home'],
+            'penalty_class': penalty['penalty_class'],
+        }
+
+    penalty_ends = listmap(penalties, get_penalty_end)
+
+    goals_and_penalties = sorted(
+        goals + penalties + penalty_ends,
+        key=get_time
+    )
+
+    minor_penalties = {
+        'home': 0,
+        'away': 0,
+    }
+    recent_powerplay_goals = {
+        'home': 0,
+        'away': 0,
+    }
+    major_penalties = {
+        'home': 0,
+        'away': 0,
+    }
+
+    def add_strength_to_goal_or_penalty(goal_or_penalty, minor_penalties, major_penalties, recent_powerplay_goals):
+        primary_team = 'home' if goal_or_penalty['home'] == '1' else 'away'
+        opposition_team = 'home' if goal_or_penalty['home'] == '0' else 'away'
+        is_goal = goal_or_penalty['event'] == 'goal'
+        is_penalty = goal_or_penalty['event'] == 'penalty'
+        is_penalty_end = goal_or_penalty['event'] == PENALTY_END
+
+        def get_strength(team):
+            return str(min(5, max(3, 5 - minor_penalties[team] - major_penalties[team])))
+
+        primary_strength = get_strength(primary_team)
+        opposition_strength = get_strength(opposition_team)
+
+        if is_goal and len(goal_or_penalty['plus']) > 0:
+            goal_or_penalty['strength'] = (
+                str(len(goal_or_penalty['plus'])) + 'v' + str(len(goal_or_penalty['minus']))
+            )
+        else:
+            # TODO empty net?
+            goal_or_penalty['strength'] = primary_strength + 'v' + opposition_strength
+
+        # powerplay goal
+        if is_goal and primary_strength > opposition_strength and minor_penalties[opposition_team] > 0:
+            minor_penalties[opposition_team] -= 1
+            recent_powerplay_goals[primary_team] += 1
+        # penalty start
+        elif is_penalty and goal_or_penalty['pp'] == '1':
+            if goal_or_penalty['penalty_class'] == 'Minor':
+                minor_penalties[primary_team] += 1
+            elif goal_or_penalty['penalty_class'] in MAJOR_PENALTY_TYPES:
+                major_penalties[primary_team] += 1
+        # penalty end
+        elif is_penalty_end and goal_or_penalty['pp'] == '1':
+            if recent_powerplay_goals[opposition_team] > 0 and goal_or_penalty['penalty_class'] == 'Minor':
+                recent_powerplay_goals[opposition_team] -= 1
+            elif goal_or_penalty['penalty_class'] == 'Minor':
+                minor_penalties[primary_team] -= 1
+            elif goal_or_penalty['penalty_class'] in MAJOR_PENALTY_TYPES:
+                major_penalties[primary_team] -= 1
+
+        return goal_or_penalty
+
+    listmap(goals_and_penalties, functools.partial(
+        add_strength_to_goal_or_penalty,
+        minor_penalties=minor_penalties,
+        major_penalties=major_penalties,
+        recent_powerplay_goals=recent_powerplay_goals,
+    ))
+
     return (
-        listmap(game_summary['goals'], convert_goal) if game_summary['goals'] is not None else [],
-        listmap(filter(filter_penalty, game_summary['penalties']), convert_penalty)
-        if game_summary['penalties'] is not None else
-        [],
+        listmap(goals, convert_goal),
+        listmap(filter(filter_penalty, penalties), convert_penalty),
         game_result,
     )
 
