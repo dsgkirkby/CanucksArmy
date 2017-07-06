@@ -92,6 +92,20 @@ def get_game_info(game_info, season_info, league):
     home_goals = game_summary['totalGoals']['visitor']
     away_goals = game_summary['totalGoals']['home']
 
+    end_clock = game_summary['meta']['game_clock']
+    end_minute = int(end_clock[3:5])
+    end_second = int(end_clock[6:8])
+    end_period = game_summary['meta']['period']
+    regular_icetime_seconds = 3 * 20 * SECONDS_PER_MINUTE
+    ot_period_length = 20 if is_playoff_game else 5
+    overtime_icetime_seconds = (
+        (int(end_period) - 3)  # Number of OT periods
+        * ot_period_length
+        * SECONDS_PER_MINUTE
+        - (end_minute * SECONDS_PER_MINUTE + end_second)  # Remaining time if OT goal was scored
+    )
+    total_icetime_seconds = regular_icetime_seconds + overtime_icetime_seconds
+
     home_score = 0
     away_score = 0
 
@@ -222,8 +236,12 @@ def get_game_info(game_info, season_info, league):
         if is_5v5:
             ev_5v5_icetime['seconds'] += icetime
 
-    def get_strength(team):
-        return str(min(5, max(3, 5 - minor_penalties[team] - major_penalties[team])))
+    def get_strength(team, is_ot=False):
+        if is_ot and not is_playoff_game:
+            other_team = 'away' if team == 'home' else 'home'
+            return str(min(5, max(3, 3 + minor_penalties[other_team] + major_penalties[other_team])))
+        else:
+            return str(min(5, max(3, 5 - minor_penalties[team] - major_penalties[team])))
 
     def add_strength_to_goal_or_penalty(goal_or_penalty, minor_penalties, major_penalties, recent_powerplay_goals):
         primary_team = 'home' if goal_or_penalty['home'] == '1' else 'away'
@@ -231,9 +249,10 @@ def get_game_info(game_info, season_info, league):
         is_goal = goal_or_penalty['event'] == 'goal'
         is_penalty = goal_or_penalty['event'] == 'penalty'
         is_penalty_end = goal_or_penalty['event'] == PENALTY_END
+        is_ot = int(goal_or_penalty['period_id']) > 3
 
-        primary_strength = get_strength(primary_team)
-        opposition_strength = get_strength(opposition_team)
+        primary_strength = get_strength(primary_team, is_ot)
+        opposition_strength = get_strength(opposition_team, is_ot)
 
         track_event_5v5_icetime(goal_or_penalty, primary_strength == opposition_strength == '5')
 
@@ -273,25 +292,13 @@ def get_game_info(game_info, season_info, league):
         recent_powerplay_goals=recent_powerplay_goals,
     ))
 
-    end_clock = game_summary['meta']['game_clock']
-    end_minute = int(end_clock[3:5])
-    end_second = int(end_clock[6:8])
-    end_period = game_summary['meta']['period']
-    regular_icetime_seconds = 3 * 20 * SECONDS_PER_MINUTE
-    ot_period_length = 20 if is_playoff_game else 5
-    overtime_icetime_seconds = (
-        (int(end_period) - 3)  # Number of OT periods
-        * ot_period_length
-        * SECONDS_PER_MINUTE
-        - (end_minute * SECONDS_PER_MINUTE + end_second)  # Remaining time if OT goal was scored
-    )
-    total_icetime_seconds = regular_icetime_seconds + overtime_icetime_seconds
-
     end_minute_from_start = (ot_period_length if end_period != '3' else 20) - end_minute
     end_second_from_start = - end_second
     if end_second_from_start < 0:
         end_minute_from_start -= 1
         end_second_from_start += 60
+
+    game_ends_in_ot = int(end_period) > 3
 
     # Add any 5v5 icetime at the end of the game
     track_event_5v5_icetime(
@@ -302,7 +309,7 @@ def get_game_info(game_info, season_info, league):
                 ('0' if end_second_from_start < 10 else '') + str(end_second_from_start),
             'period_id': end_period
         },
-        get_strength('home') == get_strength('away') == '5'
+        get_strength('home', game_ends_in_ot) == get_strength('away', game_ends_in_ot) == '5'
     )
 
     game_result = [
