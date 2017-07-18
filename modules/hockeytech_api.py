@@ -26,7 +26,14 @@ def get_api_key(league):
 
 
 def team_name(team):
-    return strip_extra_spaces(team['city'] + ' ' + team['nickname'])
+    city = team['city']
+    nickname = team['nickname']
+    name = team['name']
+
+    if city == nickname:
+        return name
+    else:
+        return strip_extra_spaces(city + ' ' + nickname)
 
 
 def team_roster(team_lineup):
