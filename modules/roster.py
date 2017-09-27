@@ -22,7 +22,7 @@ def get_player_rosters(league, season, results_array=None, multiple_teams=False)
     team_search_page = html5lib.parse(team_search_request.text)
     # /html/body/div/table[3]/tbody/tr/td[5]/table[3]
     team_table = team_search_page.find(
-        './{0}body/{0}div/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[3]'.format(html_prefix))
+        './{0}body/{0}div[2]/{0}div/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[3]'.format(html_prefix))
 
     teams = team_table.findall('.//{0}tbody/{0}tr/{0}td[2]/{0}a'.format(html_prefix))
 
