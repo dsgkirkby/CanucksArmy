@@ -1,7 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
+from modules import helpers
 
-ID = 1
+JERSEY_NUMBER = 1
 NAME = 2
 DOB = 4
 HOMETOWN = 5
@@ -49,12 +50,13 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
         player_stats = player.find_all('td')
 
         """ Only add to the array if the row isn't blank """
-        if player_stats[ID].font is not None:
+        if player_stats[JERSEY_NUMBER].font is not None:
             continue
 
         try:
             name = player_stats[NAME].a.text.strip()
-            number = player_stats[ID].text.strip()[1:]
+            id = helpers.get_player_id_from_url(player_stats[NAME].a.attrs['href'])
+            number = player_stats[JERSEY_NUMBER].text.strip()[1:]
             position = player_stats[NAME].font.text.strip()[1:-1]
             dob = player_stats[DOB].text.strip()
             hometown = player_stats[HOMETOWN].a.text.strip()
@@ -84,5 +86,6 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
             hometown,
             height,
             weight,
-            shoots
+            shoots,
+            id,
         ])

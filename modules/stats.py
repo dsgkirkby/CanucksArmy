@@ -1,8 +1,9 @@
 import requests
 import re
 from bs4 import BeautifulSoup
+from modules import helpers
 
-ID = 0
+JERSEY_NUMBER = 0
 NAME = 1
 TEAM = 2
 GAMES = 3
@@ -29,13 +30,13 @@ def get_player_stats(league, season, results_array, goalie_results_array, show_m
         results_array = []
 
     if len(results_array) == 0:
-        results_array.append(['Name', 'Position', 'Season', 'League', 'Team', 'GP', 'G', 'A', 'TP', 'PIM', '+/-'])
+        results_array.append(['Name', 'Position', 'Season', 'League', 'Team', 'GP', 'G', 'A', 'TP', 'PIM', '+/-', 'ID'])
 
     if goalie_results_array is None:
         goalie_results_array = []
 
     if len(goalie_results_array) == 0:
-        goalie_results_array.append(['Name', 'Season', 'League', 'Team', 'GP', 'GAA', 'SV%'])
+        goalie_results_array.append(['Name', 'Season', 'League', 'Team', 'GP', 'GAA', 'SV%', 'ID'])
 
     player_ids = []
     goalie_ids = []
@@ -80,6 +81,7 @@ def get_player_stats(league, season, results_array, goalie_results_array, show_m
             # If there is no <a> in the player row, then this row is a continuation of a previous player
             if player_stats[NAME].a is not None:
                 name = player_stats[NAME].a.text
+                id = helpers.get_player_id_from_url(player_stats[NAME].a.attrs['href'])
                 position = player_stats[NAME].font.text.strip()[1:-1]
                 player_id = player_stats[NAME].a.attrs['href']
 
@@ -119,7 +121,8 @@ def get_player_stats(league, season, results_array, goalie_results_array, show_m
                 assists,
                 points,
                 pim,
-                plusminus
+                plusminus,
+                id,
             ])
 
         #########################################################
@@ -142,6 +145,7 @@ def get_player_stats(league, season, results_array, goalie_results_array, show_m
                 continue
 
             name = goalie_stats[GOALIE_NAME].a.text
+            id = helpers.get_player_id_from_url(goalie_stats[NAME].a.attrs['href'])
 
             goalie_id = name
 
@@ -169,6 +173,7 @@ def get_player_stats(league, season, results_array, goalie_results_array, show_m
                 games,
                 gaa,
                 svp,
+                id,
             ])
 
         page_index += 1

@@ -37,3 +37,7 @@ def get_json(url):
     request = requests.get(url)
     decoder = json.JSONDecoder()
     return decoder.decode(request.text)
+
+
+def get_player_id_from_url(url):
+    return url[url.index('=') + 1:]
