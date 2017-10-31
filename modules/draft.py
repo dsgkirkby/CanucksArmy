@@ -26,7 +26,7 @@ def get_draft_picks(season, results_array=None, show_extra=False):
     draft_page = html5lib.parse(r.text)
     # xpath: /html/body/div/table[3]/tbody/tr/td[5]/p[2]/table[1]
     draft_table = draft_page.find(
-        './{0}body/{0}div/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}p[2]/{0}table[1]'.format(html_prefix))
+        './{0}body/{0}div[2]/{0}div/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}p[2]/{0}table[1]'.format(html_prefix))
 
     players = draft_table.findall('.//{0}tbody/{0}tr'.format(html_prefix))
     pick_number = 1

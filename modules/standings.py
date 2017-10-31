@@ -31,7 +31,7 @@ def get_league_standings(league, season, results_array=None):
     standings_page = html5lib.parse(request.text)
 
     standings_table = standings_page.find(
-        './{0}body/{0}div/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[3]'.format(html_prefix))
+        './{0}body/{0}div[2]/{0}div/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[3]'.format(html_prefix))
 
     teams = standings_table.findall('.//{0}tbody/{0}tr'.format(html_prefix))
 
