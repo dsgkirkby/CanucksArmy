@@ -11,8 +11,6 @@ def export_array_to_csv(array, name):
         for resultRow in array:
             for index, item in enumerate(resultRow):
                 resultRow[index] = unidecode(str(item))
-                if len(resultRow[index]) == 0:
-                    resultRow[index] = '-'
             try:
                 csv_writer.writerow(resultRow)
             except UnicodeEncodeError as e:
