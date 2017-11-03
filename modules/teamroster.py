@@ -50,7 +50,7 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
         player_stats = player.find_all('td')
 
         """ Only add to the array if the row isn't blank """
-        if player_stats[NAME].a is not None:
+        if player_stats[NAME].a is None:
             continue
 
         try:
