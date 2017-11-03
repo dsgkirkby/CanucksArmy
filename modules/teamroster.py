@@ -57,8 +57,6 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
             name = player_stats[NAME].a.text.strip()
             id = helpers.get_player_id_from_url(player_stats[NAME].a.attrs['href'])
             number = player_stats[JERSEY_NUMBER].text.strip()[1:]
-            if not number:
-                number = '-'
             position = player_stats[NAME].font.text.strip()[1:-1]
             dob = player_stats[DOB].text.strip()
             hometown = player_stats[HOMETOWN].a.text.strip()
