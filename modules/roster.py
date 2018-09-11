@@ -36,6 +36,6 @@ def get_player_rosters(league, season, results_array=None, multiple_teams=False)
 
     for team_url in team_urls:
         teamroster.get_team_roster(
-            team_url, season, player_ids, results_array, multiple_teams, league)
+            team_url, season, player_ids, results_array, multiple_teams)
 
     return results_array

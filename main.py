@@ -4,17 +4,28 @@ from modules import helpers, stats, roster, teamroster, standings, icetime
 
 
 def main():
-    arg_parser = argparse.ArgumentParser(description="Get prospect data from any league on the planet over a range of seasons")
-    arg_parser.add_argument('--roster', action='store_true', help="Output roster list for the given league(s) and season(s)")
-    arg_parser.add_argument('--team_roster', action='store_true', help="Output roster list for the given team and season(s)")
-    arg_parser.add_argument('--stats', action='store_true', help="Output stats list for the given league(s) and season(s)")
-    arg_parser.add_argument('--playoffs', action='store_true', help="Use playoff instead of regular season stats")
-    arg_parser.add_argument('--standings', action='store_true', help="All teams in league, with goals for/against")
-    arg_parser.add_argument('--icetime', action='store_true', help="NHL icetime for season")
-    arg_parser.add_argument('--multiple_teams', action='store_true', help="Whether to show all teams a player has played for")
-    arg_parser.add_argument('leagues', type=helpers.comma_delimited_list, help="Comma-delimited list (no spaces) of leagues")
-    arg_parser.add_argument('start_season', type=int, help="Earliest season for which to scrape data. Second year of the season (i.e. passing 2014 refers to the 2013-14 season)")
-    arg_parser.add_argument('--range', type=int, help="Choose the latest season to parse to parse many seasons at once. Second year of the season (i.e. passing 2014 refers to the 2013-14 season)", required=False)
+    arg_parser = argparse.ArgumentParser(
+        description="Get prospect data from any league on the planet over a range of seasons")
+    arg_parser.add_argument('--roster', action='store_true',
+                            help="Output roster list for the given league(s) and season(s)")
+    arg_parser.add_argument('--team_roster', action='store_true',
+                            help="Output roster list for the given team and season(s)")
+    arg_parser.add_argument('--stats', action='store_true',
+                            help="Output stats list for the given league(s) and season(s)")
+    arg_parser.add_argument('--playoffs', action='store_true',
+                            help="Use playoff instead of regular season stats")
+    arg_parser.add_argument('--standings', action='store_true',
+                            help="All teams in league, with goals for/against")
+    arg_parser.add_argument(
+        '--icetime', action='store_true', help="NHL icetime for season")
+    arg_parser.add_argument('--multiple_teams', action='store_true',
+                            help="Whether to show all teams a player has played for")
+    arg_parser.add_argument('leagues', type=helpers.comma_delimited_list,
+                            help="Comma-delimited list (no spaces) of leagues")
+    arg_parser.add_argument('start_season', type=int,
+                            help="Earliest season for which to scrape data. Second year of the season (i.e. passing 2014 refers to the 2013-14 season)")
+    arg_parser.add_argument(
+        '--range', type=int, help="Choose the latest season to parse to parse many seasons at once. Second year of the season (i.e. passing 2014 refers to the 2013-14 season)", required=False)
 
     args = arg_parser.parse_args()
 
@@ -37,7 +48,8 @@ def main():
                 print('Error in {0} {1}'.format('nhl', season))
                 print(e)
 
-        helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_icetime.csv'.format(start_season, end_season, 'nhl'))
+        helpers.export_array_to_csv(
+            results_array, '{0}-{1}_{2}_icetime.csv'.format(start_season, end_season, 'nhl'))
 
     if args.roster:
         results_array = []
@@ -45,12 +57,14 @@ def main():
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
                 try:
-                    roster.get_player_rosters(league, season, results_array, multiple_teams)
+                    roster.get_player_rosters(
+                        league, season, results_array, multiple_teams)
                 except Exception as e:
                     print('Error in {0} {1}'.format(league, season))
                     print(e)
 
-        helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_rosters.csv'.format(start_season, end_season, '-'.join(args.leagues)))
+        helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_rosters.csv'.format(
+            start_season, end_season, '-'.join(args.leagues)))
 
     if args.team_roster:
         results_array = []
@@ -60,12 +74,14 @@ def main():
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
                 try:
-                    teamroster.get_team_roster('team.php?team={0}&year0={1}'.format(league, season), season, results_array=results_array)
+                    teamroster.get_team_roster('https://eliteprospects.com/team.php?team={0}&year0={1}'.format(
+                        league, season), season, results_array=results_array)
                 except Exception as e:
                     print('Error in {0} {1}'.format(league, season))
                     print(e)
 
-        helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_team_rosters.csv'.format(start_season, end_season, '-'.join(args.leagues)))
+        helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_team_rosters.csv'.format(
+            start_season, end_season, '-'.join(args.leagues)))
 
     if args.stats:
         results_array = []
@@ -74,18 +90,21 @@ def main():
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
                 try:
-                    stats.get_player_stats(league, season, results_array, goalie_results_array, multiple_teams, playoffs)
+                    stats.get_player_stats(
+                        league, season, results_array, goalie_results_array, multiple_teams, playoffs)
                 except Exception as e:
                     print('Error in {0} {1}'.format(league, season))
                     print(e)
 
         helpers.export_array_to_csv(
             results_array,
-            '{0}-{1}_{2}{3}_stats.csv'.format(start_season, end_season, '-'.join(args.leagues), '_playoff' if playoffs else '')
+            '{0}-{1}_{2}{3}_stats.csv'.format(start_season, end_season, '-'.join(
+                args.leagues), '_playoff' if playoffs else '')
         )
         helpers.export_array_to_csv(
             goalie_results_array,
-            '{0}-{1}_{2}{3}_goalie_stats.csv'.format(start_season, end_season, '-'.join(args.leagues), '_playoff' if playoffs else '')
+            '{0}-{1}_{2}{3}_goalie_stats.csv'.format(start_season, end_season, '-'.join(
+                args.leagues), '_playoff' if playoffs else '')
         )
 
     if args.standings:
@@ -94,14 +113,17 @@ def main():
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
                 try:
-                    standings.get_league_standings(league, season, results_array)
+                    standings.get_league_standings(
+                        league, season, results_array)
                 except Exception as e:
                     print('Error in {0} {1}'.format(league, season))
                     print(e)
 
-        helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_standings.csv'.format(start_season, end_season, '-'.join(args.leagues)))
+        helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_standings.csv'.format(
+            start_season, end_season, '-'.join(args.leagues)))
 
     print("Success!")
+
 
 if __name__ == '__main__':
     main()

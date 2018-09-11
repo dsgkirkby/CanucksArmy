@@ -12,7 +12,7 @@ def export_array_to_csv(array, name):
         csv_writer = csv.writer(csvFile)
         for resultRow in array:
             for index, item in enumerate(resultRow):
-                resultRow[index] = unidecode(str(item))
+                resultRow[index] = unidecode(str(item)).replace('"', '\\"')
             try:
                 csv_writer.writerow(resultRow)
             except UnicodeEncodeError as e:
@@ -42,7 +42,8 @@ def get_json(url):
 
 
 def get_player_id_from_url(url):
-    return url[url.index('=') + 1:]
+    slashes = [i for i, ltr in enumerate(url) if ltr == '/']
+    return url[slashes[-2] + 1:slashes[-1]]
 
 
 def get_ep_table_rows(table):
