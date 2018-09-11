@@ -59,6 +59,9 @@ target/
 #PyCharm
 .idea/
 
+#VS Code
+.vscode
+
 #Node
 node_modules
 
