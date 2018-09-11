@@ -16,9 +16,11 @@ def get_draft_picks(season, results_array=None, show_extra=False):
     if results_array is None:
         results_array = []
     if len(results_array) == 0:
-        results_array.append(['Year', 'Round', 'Number', 'Team', 'Name', 'Position', 'Seasons', 'Games', 'Goals', 'Assists', 'Points', 'PIM', 'Birthday'])
+        results_array.append(['Year', 'Round', 'Number', 'Team', 'Name', 'Position',
+                              'Seasons', 'Games', 'Goals', 'Assists', 'Points', 'PIM', 'Birthday'])
 
-    url = 'http://www.eliteprospects.com/draft.php?year={0}'.format(str(season))
+    url = 'http://www.eliteprospects.com/draft.php?year={0}'.format(
+        str(season))
     r = requests.get(url)
 
     # All tag names have this prepended to them
@@ -27,7 +29,6 @@ def get_draft_picks(season, results_array=None, show_extra=False):
     draft_table = draft_page.find(
         './body/section[2]/div/div[1]/div[4]/div[3]/div[1]/div[1]/div[3]/table'.replace('/', '/' + html_prefix))
 
-    players = draft_table.findall('.//{0}tbody/{0}tr'.format(html_prefix))
     pick_number = 1
 
     rounds = draft_table.findall('.//{}tbody'.format(html_prefix))
@@ -37,7 +38,8 @@ def get_draft_picks(season, results_array=None, show_extra=False):
         players = rounds[round_number].findall('.//{}tr'.format(html_prefix))
 
         # Last row is the title row for the next round (unless it's the last round)
-        num_players = len(players) if round_number == len(rounds) - 1 else len(players) - 1
+        num_players = len(players) if round_number == len(
+            rounds) - 1 else len(players) - 1
 
         for playerIndex in range(0, num_players):
             player = players[playerIndex]
@@ -46,7 +48,8 @@ def get_draft_picks(season, results_array=None, show_extra=False):
             player_birthday = ''
 
             try:
-                name_link = columns[NAME].find('./{0}span/{0}a'.format(html_prefix))
+                name_link = columns[NAME].find(
+                    './{0}span/{0}a'.format(html_prefix))
                 name_raw = name_link.text.strip()
                 name_parts = name_raw.split('(')
                 name = name_parts[0].strip()
@@ -57,7 +60,8 @@ def get_draft_picks(season, results_array=None, show_extra=False):
                     player_page = html5lib.parse(player_request.text)
 
                     player_birthday = player_page.find(
-                        './body/section[2]/div/div[1]/div[4]/div[1]/div[1]/div[2]/section/div[4]/div[1]/div[1]/ul/li[1]/div[2]/a'.replace('/', '/' + html_prefix)
+                        './body/section[2]/div/div[1]/div[4]/div[1]/div[1]/div[2]/section/div[4]/div[1]/div[1]/ul/li[1]/div[2]/a'.replace(
+                            '/', '/' + html_prefix)
                     ).text.strip()
             except AttributeError:
                 name = 'No selection made'
@@ -82,4 +86,3 @@ def get_draft_picks(season, results_array=None, show_extra=False):
             pick_number += 1
 
     return results_array
-
