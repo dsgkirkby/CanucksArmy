@@ -4,6 +4,8 @@ import requests
 import json
 from unidecode import unidecode
 
+html_prefix = '{http://www.w3.org/1999/xhtml}'
+
 
 def export_array_to_csv(array, name):
     with open(name, 'w', newline='') as csvFile:
@@ -41,3 +43,21 @@ def get_json(url):
 
 def get_player_id_from_url(url):
     return url[url.index('=') + 1:]
+
+
+def get_ep_table_rows(table):
+    rows_by_section = []
+    sections = table.findall('.//{}tbody'.format(html_prefix))
+
+    # first tbody is just the header
+    for section_number in range(1, len(sections)):
+        # Last row is the title row for the next round (unless it's the last round)
+        section_rows = sections[section_number].findall(
+            './/{}tr'.format(html_prefix))
+
+        num_rows = len(section_rows) if section_number == len(
+            sections) - 1 else len(section_rows) - 1
+
+        rows_by_section.append(section_rows[:num_rows])
+
+    return rows_by_section

@@ -1,6 +1,8 @@
 import requests
 import html5lib
 
+from modules import helpers
+
 NUMBER = 0
 TEAM = 1
 NAME = 2
@@ -31,17 +33,12 @@ def get_draft_picks(season, results_array=None, show_extra=False):
 
     pick_number = 1
 
-    rounds = draft_table.findall('.//{}tbody'.format(html_prefix))
+    rounds = helpers.get_ep_table_rows(draft_table)
 
-    # first tbody is just the header
-    for round_number in range(1, len(rounds)):
-        players = rounds[round_number].findall('.//{}tr'.format(html_prefix))
+    for round_number in range(1, len(rounds) + 1):
+        players = rounds[round_number - 1]
 
-        # Last row is the title row for the next round (unless it's the last round)
-        num_players = len(players) if round_number == len(
-            rounds) - 1 else len(players) - 1
-
-        for playerIndex in range(0, num_players):
+        for playerIndex in range(0, len(players)):
             player = players[playerIndex]
             columns = player.findall('.//{0}td'.format(html_prefix))
 
