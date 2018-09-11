@@ -22,9 +22,11 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
         player_ids = []
 
     if len(results_array) == 0:
-        results_array.append(['Number', 'Name', 'Position', 'Season', 'League', 'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots', 'ID'])
+        results_array.append(['Number', 'Name', 'Position', 'Season', 'League',
+                              'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots', 'ID'])
 
-    team_search_request = requests.get('http://www.eliteprospects.com/{0}'.format(team_url))
+    team_search_request = requests.get(
+        'http://www.eliteprospects.com/{0}'.format(team_url))
     team_page = BeautifulSoup(team_search_request.text, "html.parser")
 
     def global_nav_tag(tag):
@@ -36,7 +38,8 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
     def league_name_tag(tag):
         return tag.has_attr('id') and tag.attrs['id'] == 'fontMainlink2'
 
-    league_name = league if len(league) > 0 else team_page.find(global_nav_tag).find_parent().find(league_name_tag).text.strip()
+    league_name = league if len(league) > 0 else team_page.find(
+        global_nav_tag).find_parent().find(league_name_tag).text.strip()
 
     player_table = team_page.find(global_nav_tag).find_next_sibling('table')
 
@@ -55,7 +58,8 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
 
         try:
             name = player_stats[NAME].a.text.strip()
-            id = helpers.get_player_id_from_url(player_stats[NAME].a.attrs['href'])
+            id = helpers.get_player_id_from_url(
+                player_stats[NAME].a.attrs['href'])
             number = player_stats[JERSEY_NUMBER].text.strip()[1:]
             position = player_stats[NAME].font.text.strip()[1:-1]
             dob = player_stats[DOB].text.strip()
