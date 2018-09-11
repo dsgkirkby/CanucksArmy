@@ -21,7 +21,6 @@ def get_player_rosters(league, season, results_array=None, multiple_teams=False)
     # All tag names have this prepended to them
     html_prefix = '{http://www.w3.org/1999/xhtml}'
     team_search_page = html5lib.parse(team_search_request.text)
-    # /html/body/div/table[3]/tbody/tr/td[5]/table[3]
     team_table = team_search_page.find(
         './body/section[2]/div/div[1]/div[4]/div[2]/div[1]/div/div[3]/table'.replace('/', '/' + html_prefix))
 
