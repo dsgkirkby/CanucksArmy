@@ -1,6 +1,6 @@
 import requests
 import html5lib
-from modules import teamroster
+from modules import teamroster, helpers
 
 
 def get_player_rosters(league, season, results_array=None, multiple_teams=False):
@@ -14,7 +14,8 @@ def get_player_rosters(league, season, results_array=None, multiple_teams=False)
 
     """ Get the league link """
 
-    team_search_url = "http://www.eliteprospects.com/standings.php?league={0}&startdate={1}".format(league, str(int(season) - 1))
+    team_search_url = "http://www.eliteprospects.com/standings.php?league={0}&startdate={1}".format(
+        league, str(int(season) - 1))
     team_search_request = requests.get(team_search_url)
 
     # All tag names have this prepended to them
@@ -22,21 +23,19 @@ def get_player_rosters(league, season, results_array=None, multiple_teams=False)
     team_search_page = html5lib.parse(team_search_request.text)
     # /html/body/div/table[3]/tbody/tr/td[5]/table[3]
     team_table = team_search_page.find(
-        './{0}body/{0}div[2]/{0}div/{0}table[3]/{0}tbody/{0}tr/{0}td[5]/{0}table[3]'.format(html_prefix))
+        './body/section[2]/div/div[1]/div[4]/div[2]/div[1]/div/div[3]/table'.replace('/', '/' + html_prefix))
 
-    teams = team_table.findall('.//{0}tbody/{0}tr/{0}td[2]/{0}a'.format(html_prefix))
+    teams_by_conference = helpers.get_ep_table_rows(team_table)
 
-    on_first_row = True
-
-    for team in teams:
-        if on_first_row:
-            on_first_row = False
-            continue
-        team_urls.append(team.attrib['href'])
+    for conference in teams_by_conference:
+        for team in conference:
+            team_urls.append(
+                team.find('.//{0}td[2]/{0}span/{0}a'.format(html_prefix)).attrib['href'])
 
     """ Get the players """
 
     for team_url in team_urls:
-        teamroster.get_team_roster(team_url, season, player_ids, results_array, multiple_teams, league)
+        teamroster.get_team_roster(
+            team_url, season, player_ids, results_array, multiple_teams, league)
 
     return results_array
