@@ -91,7 +91,7 @@ def main():
             for season in range(start_season, end_season + 1):
                 try:
                     stats.get_player_stats(
-                        league, season, results_array, goalie_results_array, multiple_teams, playoffs)
+                        league, season, results_array, goalie_results_array)
                 except Exception as e:
                     print('Error in {0} {1}'.format(league, season))
                     print(e)
