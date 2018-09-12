@@ -20,6 +20,8 @@ def main():
         '--icetime', action='store_true', help="NHL icetime for season")
     arg_parser.add_argument('--multiple_teams', action='store_true',
                             help="Whether to show all teams a player has played for")
+    arg_parser.add_argument('--full_dob', action='store_true',
+                            help="Whether to fetch a player's full DOB (much slower)")
     arg_parser.add_argument('leagues', type=helpers.comma_delimited_list,
                             help="Comma-delimited list (no spaces) of leagues")
     arg_parser.add_argument('start_season', type=int,
@@ -58,7 +60,7 @@ def main():
             for season in range(start_season, end_season + 1):
                 try:
                     roster.get_player_rosters(
-                        league, season, results_array, multiple_teams)
+                        league, season, results_array, multiple_teams, full_dob=args.full_dob)
                 except Exception as e:
                     print('Error in {0} {1}'.format(league, season))
                     print(e)
@@ -75,7 +77,7 @@ def main():
             for season in range(start_season, end_season + 1):
                 try:
                     teamroster.get_team_roster('https://eliteprospects.com/team.php?team={0}&year0={1}'.format(
-                        league, season), season, results_array=results_array)
+                        league, season), season, results_array=results_array, full_dob=args.full_dob)
                 except Exception as e:
                     print('Error in {0} {1}'.format(league, season))
                     print(e)

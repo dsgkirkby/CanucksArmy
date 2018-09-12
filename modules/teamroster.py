@@ -11,7 +11,7 @@ WEIGHT = 8
 SHOOTS = 9
 
 
-def get_team_roster(team_url, season, player_ids=None, results_array=None, multiple_teams=False):
+def get_team_roster(team_url, season, player_ids=None, results_array=None, multiple_teams=False, full_dob=False):
     if results_array is None:
         results_array = []
 
@@ -52,6 +52,12 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
                     name_link.attrib['href'])
                 number = player_stats[JERSEY_NUMBER].text.strip()[1:]
                 dob = player_stats[DOB].text.strip()
+                if full_dob:
+                    player_page = requests.get(name_link.attrib['href'])
+                    dob = html5lib.parse(player_page.text).find(
+                        './body/section[2]/div/div[1]/div[4]/div[1]/div[1]/div[2]/section/div[4]/div[1]/div[1]/ul/li[1]/div[2]/a'.replace(
+                            '/', '/' + helpers.html_prefix)
+                    ).text.strip()
                 hometown = player_stats[HOMETOWN].find(
                     './{}a'.format(helpers.html_prefix)).text.strip()
                 height = player_stats[HEIGHT].text.strip()
