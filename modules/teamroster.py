@@ -70,7 +70,7 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
                 player_id = name + dob + hometown
                 if player_id in player_ids:
                     index = player_ids.index(player_id)
-                    results_array[index][4] = 'multiple'
+                    results_array[index][5] = 'multiple'
                     continue
 
                 player_ids.append(player_id)
