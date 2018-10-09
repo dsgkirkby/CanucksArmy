@@ -44,11 +44,7 @@ def main():
         results_array = []
 
         for season in range(start_season, end_season + 1):
-            try:
-                icetime.get_nhl_season_icetime(season, results_array)
-            except Exception as e:
-                print('Error in {0} {1}'.format('nhl', season))
-                print(e)
+            icetime.get_nhl_season_icetime(season, results_array)
 
         helpers.export_array_to_csv(
             results_array, '{0}-{1}_{2}_icetime.csv'.format(start_season, end_season, 'nhl'))
@@ -58,12 +54,8 @@ def main():
 
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
-                try:
-                    roster.get_player_rosters(
-                        league, season, results_array, multiple_teams, full_dob=args.full_dob)
-                except Exception as e:
-                    print('Error in {0} {1}'.format(league, season))
-                    print(e)
+                roster.get_player_rosters(
+                    league, season, results_array, multiple_teams, full_dob=args.full_dob)
 
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_rosters.csv'.format(
             start_season, end_season, '-'.join(args.leagues)))
@@ -75,12 +67,8 @@ def main():
 
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
-                try:
-                    teamroster.get_team_roster('https://eliteprospects.com/team.php?team={0}&year0={1}'.format(
-                        league, season), season, results_array=results_array, full_dob=args.full_dob)
-                except Exception as e:
-                    print('Error in {0} {1}'.format(league, season))
-                    print(e)
+                teamroster.get_team_roster('https://eliteprospects.com/team.php?team={0}&year0={1}'.format(
+                    league, season), season, results_array=results_array, full_dob=args.full_dob)
 
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_team_rosters.csv'.format(
             start_season, end_season, '-'.join(args.leagues)))
@@ -91,12 +79,8 @@ def main():
 
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
-                try:
-                    stats.get_player_stats(
-                        league, season, results_array, goalie_results_array)
-                except Exception as e:
-                    print('Error in {0} {1}'.format(league, season))
-                    print(e)
+                stats.get_player_stats(
+                    league, season, results_array, goalie_results_array)
 
         helpers.export_array_to_csv(
             results_array,
@@ -114,12 +98,8 @@ def main():
 
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
-                try:
-                    standings.get_league_standings(
-                        league, season, results_array)
-                except Exception as e:
-                    print('Error in {0} {1}'.format(league, season))
-                    print(e)
+                standings.get_league_standings(
+                    league, season, results_array)
 
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_standings.csv'.format(
             start_season, end_season, '-'.join(args.leagues)))
