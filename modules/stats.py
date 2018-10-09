@@ -36,6 +36,6 @@ def get_player_stats(league, season, results_array=None, goalie_results_array=No
 
     for team_url in team_urls:
         team_stats.get_player_stats(
-            team_url, season, results_array, goalie_results_array)
+            team_url, season, league, results_array, goalie_results_array)
 
     return results_array
