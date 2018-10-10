@@ -8,7 +8,7 @@ def main():
         description="Get prospect data from any league on the planet over a range of seasons")
     arg_parser.add_argument('--roster', action='store_true',
                             help="Output roster list for the given league(s) and season(s)")
-    arg_parser.add_argument('--team_roster', action='store_true',
+    arg_parser.add_argument('--team_roster', type=str,
                             help="Output roster list for the given team and season(s)")
     arg_parser.add_argument('--stats', action='store_true',
                             help="Output stats list for the given league(s) and season(s)")
@@ -60,15 +60,16 @@ def main():
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_rosters.csv'.format(
             start_season, end_season, '-'.join(args.leagues)))
 
-    if args.team_roster:
+    if args.team_roster != None:
         results_array = []
 
-        # When running team_rosters, the 'leagues' argument is actually teams
-
-        for league in args.leagues:
+        if len(args.leagues) != 1:
+            print('Error: must supply a single league for the team you wish to fetch the roster of')
+        else:
+            league = args.leagues[0]
             for season in range(start_season, end_season + 1):
                 teamroster.get_team_roster('https://eliteprospects.com/team.php?team={0}&year0={1}'.format(
-                    league, season), season, results_array=results_array, full_dob=args.full_dob)
+                    args.team_roster, season), season, league, results_array=results_array, full_dob=args.full_dob)
 
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_team_rosters.csv'.format(
             start_season, end_season, '-'.join(args.leagues)))

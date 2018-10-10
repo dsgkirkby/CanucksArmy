@@ -11,7 +11,7 @@ WEIGHT = 8
 SHOOTS = 9
 
 
-def get_team_roster(team_url, season, player_ids=None, results_array=None, multiple_teams=False, full_dob=False):
+def get_team_roster(team_url, season, league_name, player_ids=None, results_array=None, multiple_teams=False, full_dob=False):
     if results_array is None:
         results_array = []
 
@@ -24,9 +24,6 @@ def get_team_roster(team_url, season, player_ids=None, results_array=None, multi
 
     team_search_request = requests.get(team_url)
     team_page = html5lib.parse(team_search_request.text)
-
-    league_name = team_page.find('./body/section[2]/div/div[1]/div[4]/div[1]/div/div[1]/div[3]/small/span/a'.replace(
-        '/', '/' + helpers.html_prefix)).text.strip()
 
     team_name = team_page.find('./body/section[2]/div/div[1]/div[4]/div[1]/div/div[1]/div[3]'.replace(
         '/', '/' + helpers.html_prefix)).text.strip()
