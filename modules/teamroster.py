@@ -50,11 +50,16 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
                 number = player_stats[JERSEY_NUMBER].text.strip()[1:]
                 dob = player_stats[DOB].text.strip()
                 if full_dob:
-                    player_page = requests.get(name_link.attrib['href'])
-                    dob = html5lib.parse(player_page.text).find(
-                        './body/section[2]/div/div[1]/div[4]/div[1]/div[1]/div[2]/section/div[4]/div[1]/div[1]/ul/li[1]/div[2]/a'.replace(
+                    player_page = html5lib.parse(requests.get(name_link.attrib['href']).text)
+                    dob_container = player_page.find(
+                        './body/section[2]/div/div[1]/div[4]/div[1]/div[1]/div[2]/section/div[4]/div[1]/div[1]/ul/li[1]/div[2]'.replace(
                             '/', '/' + helpers.html_prefix)
-                    ).text.strip()
+                    )
+                    # Some players don't have a DOB listed, in this case we use whatever was in the roster page (probably '-')
+                    try:
+                        dob = dob_container.find('./{}a'.format(helpers.html_prefix)).text.strip()
+                    except:
+                        pass
                 hometown = player_stats[HOMETOWN].find(
                     './{}a'.format(helpers.html_prefix)).text.strip()
                 height = player_stats[HEIGHT].text.strip()
