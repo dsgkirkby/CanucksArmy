@@ -20,13 +20,17 @@ def get_league_code(league):
 
 def get_api_key(league):
     if league == 'ahl':
-        return 'c680916776709578'
+        return '50c2cd9b5e18e390'
     elif league == 'whl':
         return '41b145a848f4bd67'
     elif league == 'ohl':
         return '2976319eb44abe94'
     elif league == 'qmjhl':
         return 'f322673b6bcae299'
+    elif league == 'ushl':
+        return 'e828f89b243dc43f'
+    elif league == 'bchl':
+        return 'ca4e9e599d4dae55'
 
 
 def team_name(team):
