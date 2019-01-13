@@ -47,11 +47,8 @@ def get_draft_picks(season, results_array=None, show_extra=False):
             try:
                 name_link = columns[NAME].find(
                     './{0}span/{0}a'.format(html_prefix))
-                name_raw = name_link.text.strip()
-                name_parts = name_raw.split('(')
-                name = name_parts[0].strip()
-                position = name_parts[1][:-1]
-
+                name, position = helpers.get_info_from_player_name(
+                    name_link.text)
                 if show_extra:
                     player_request = requests.get(name_link.attrib['href'])
                     player_page = html5lib.parse(player_request.text)

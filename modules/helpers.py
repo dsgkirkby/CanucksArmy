@@ -50,7 +50,7 @@ def get_ep_table_rows(table):
     rows_by_section = []
     sections = table.findall('.//{}tbody'.format(html_prefix))
 
-    if len(sections) == 1: # this is the case when there's no category to group by, for example a league without conferences
+    if len(sections) == 1:  # this is the case when there's no category to group by, for example a league without conferences
         section_rows = sections[0].findall(
             './/{}tr'.format(html_prefix))
 
@@ -68,3 +68,17 @@ def get_ep_table_rows(table):
             rows_by_section.append(section_rows[:num_rows])
 
     return rows_by_section
+
+
+def get_info_from_player_name(name: str):
+    name_raw = name.strip()
+    name_parts = name_raw.split('(')
+
+    # Some players have no position or other data listed for some reason
+    if len(name_parts) < 2:
+        return name_raw, None
+
+    name = name_parts[0].strip()
+    position = name_parts[1][:-1].strip()
+
+    return name, position

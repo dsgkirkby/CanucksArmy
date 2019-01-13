@@ -64,7 +64,8 @@ def main():
         results_array = []
 
         if len(args.leagues) != 1:
-            print('Error: must supply a single league for the team you wish to fetch the roster of')
+            print(
+                'Error: must supply a single league for the team you wish to fetch the roster of')
         else:
             league = args.leagues[0]
             for season in range(start_season, end_season + 1):

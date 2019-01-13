@@ -52,10 +52,7 @@ def get_player_stats(team_url, season, league_name, results_array, goalie_result
 
             name_link = player_stats[NAME].find(
                 './{0}span/{0}a'.format(helpers.html_prefix))
-            name_raw = name_link.text.strip()
-            name_parts = name_raw.split('(')
-            name = name_parts[0].strip()
-            position = name_parts[1][:-1].strip()
+            name, position = helpers.get_info_from_player_name(name_link.text)
             id = helpers.get_player_id_from_url(
                 name_link.attrib['href'])
             games = player_stats[GAMES].text.strip()

@@ -41,26 +41,27 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
             try:
                 name_link = player_stats[NAME].find(
                     './{0}span/{0}a'.format(helpers.html_prefix))
-                name_raw = name_link.text.strip()
-                name_parts = name_raw.split('(')
-                name = name_parts[0].strip()
-                position = name_parts[1][:-1].strip()
+                name, position = helpers.get_info_from_player_name(
+                    name_link.text)
                 id = helpers.get_player_id_from_url(
                     name_link.attrib['href'])
                 number = player_stats[JERSEY_NUMBER].text.strip()[1:]
                 dob = player_stats[DOB].text.strip()
                 if full_dob:
-                    player_page = html5lib.parse(requests.get(name_link.attrib['href']).text)
+                    player_page = html5lib.parse(
+                        requests.get(name_link.attrib['href']).text)
                     dob_container = player_page.find(
                         './body/section[2]/div/div[1]/div[4]/div[1]/div/div[2]/section/div[5]/div/div[1]/ul/li[1]/div[2]'.replace(
                             '/', '/' + helpers.html_prefix)
                     )
                     if dob_container is None:
-                        print('Error looking up full dob - xpath likely needs to be updated')
+                        print(
+                            'Error looking up full dob - xpath likely needs to be updated')
 
                     # Some players don't have a DOB listed, in this case we use whatever was in the roster page (probably '-')
                     try:
-                        dob = dob_container.find('./{}a'.format(helpers.html_prefix)).text.strip()
+                        dob = dob_container.find(
+                            './{}a'.format(helpers.html_prefix)).text.strip()
                     except:
                         pass
                 hometown = player_stats[HOMETOWN].find(
