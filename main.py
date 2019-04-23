@@ -1,6 +1,6 @@
 import argparse
 
-from modules import helpers, stats, roster, teamroster, standings, icetime
+from modules import helpers, stats, roster, teamroster, standings, icetime, team_stats
 
 
 def main():
@@ -12,6 +12,8 @@ def main():
                             help="Output roster list for the given team and season(s)")
     arg_parser.add_argument('--stats', action='store_true',
                             help="Output stats list for the given league(s) and season(s)")
+    arg_parser.add_argument('--team_stats', type=str,
+                            help="Output stats list for the given team and season(s)")
     arg_parser.add_argument('--playoffs', action='store_true',
                             help="Use playoff instead of regular season stats")
     arg_parser.add_argument('--standings', action='store_true',
@@ -73,6 +75,31 @@ def main():
                     args.team_roster, season), season, league, results_array=results_array, full_dob=args.full_dob)
 
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_team_rosters.csv'.format(
+            start_season, end_season, '-'.join(args.leagues)))
+
+    if args.team_stats is not None:
+        results_array = []
+        goalie_results_array = []
+
+        if len(args.leagues) != 1:
+            print(
+                'Error: must supply a single league for the team you wish to fetch stats for')
+        else:
+            league = args.leagues[0]
+            for season in range(start_season, end_season + 1):
+                team_stats.get_player_stats(
+                    'https://eliteprospects.com/team.php?team={0}&year0={1}'.format(
+                        args.team_stats, season
+                    ),
+                    season,
+                    league,
+                    results_array=results_array,
+                    goalie_results_array=goalie_results_array
+                )
+
+        helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_team_stats.csv'.format(
+            start_season, end_season, '-'.join(args.leagues)))
+        helpers.export_array_to_csv(goalie_results_array, '{0}-{1}_{2}_team_goalie_stats.csv'.format(
             start_season, end_season, '-'.join(args.leagues)))
 
     if args.stats:
