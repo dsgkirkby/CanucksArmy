@@ -29,7 +29,9 @@ def get_player_rosters(league, season, results_array=None, multiple_teams=False,
     for conference in teams_by_conference:
         for team in conference:
             team_urls.append(
-                team.find('.//{0}td[2]/{0}span/{0}a'.format(html_prefix)).attrib['href'])
+                team.find('.//{0}td[2]/{0}span/{0}a'.format(html_prefix)).attrib['href'] +
+                f"/{int(season) - 1}-{season}"
+            )
 
     """ Get the players """
 
