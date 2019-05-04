@@ -51,7 +51,7 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
                     player_page = html5lib.parse(
                         requests.get(name_link.attrib['href']).text)
                     dob_container = player_page.find(
-                        './body/section[2]/div/div[1]/div[4]/div[1]/div/div[2]/section/div[5]/div/div[1]/ul/li[1]/div[2]'.replace(
+                        './body/section[2]/div/div[1]/div[4]/div[1]/div/div[2]/section/div[6]/div/div[1]/ul/li[1]/div[2]/a'.replace(
                             '/', '/' + helpers.html_prefix)
                     )
                     if dob_container is None:
