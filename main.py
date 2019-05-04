@@ -62,7 +62,7 @@ def main():
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_rosters.csv'.format(
             start_season, end_season, '-'.join(args.leagues)))
 
-    if args.team_roster != None:
+    if args.team_roster is not None:
         results_array = []
 
         if len(args.leagues) != 1:
@@ -88,9 +88,7 @@ def main():
             league = args.leagues[0]
             for season in range(start_season, end_season + 1):
                 team_stats.get_player_stats(
-                    'https://eliteprospects.com/team.php?team={0}&year0={1}'.format(
-                        args.team_stats, season
-                    ),
+                    f'https://www.eliteprospects.com/team/{args.team_stats}/{int(season) - 1}-{season}?tab=stats#players',
                     season,
                     league,
                     results_array=results_array,
