@@ -31,7 +31,7 @@ def get_player_stats(league, season, results_array=None, goalie_results_array=No
         for team in conference:
             team_urls.append(
                 team.find('.//{0}td[2]/{0}span/{0}a'.format(html_prefix)).attrib['href'] +
-                f"/{int(season) - 1}-{season}"
+                "/{}-{}".format(int(season) - 1, season)
             )
 
     """ Get the players """
