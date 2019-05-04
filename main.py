@@ -88,7 +88,11 @@ def main():
             league = args.leagues[0]
             for season in range(start_season, end_season + 1):
                 team_stats.get_player_stats(
-                    f'https://www.eliteprospects.com/team/{args.team_stats}/{int(season) - 1}-{season}?tab=stats#players',
+                    'https://www.eliteprospects.com/team/{}/{}-{}?tab=stats#players'.format(
+                        args.team_stats,
+                        int(season) - 1,
+                        season
+                    ),
                     season,
                     league,
                     results_array=results_array,
