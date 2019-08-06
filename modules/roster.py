@@ -1,5 +1,6 @@
 import requests
 import html5lib
+import re
 from modules import teamroster, helpers
 
 
@@ -28,10 +29,12 @@ def get_player_rosters(league, season, results_array=None, multiple_teams=False,
 
     for conference in teams_by_conference:
         for team in conference:
-            team_urls.append(
-                team.find('.//{0}td[2]/{0}span/{0}a'.format(html_prefix)).attrib['href'] +
-                "/{}-{}".format(int(season) - 1, season)
-            )
+            team_url: str = team.find('.//{0}td[2]/{0}span/{0}a'.format(html_prefix)).attrib['href']
+            if re.compile('/\d{4}-\d{4}$').search(team_url):
+                team_url = team_url[:team_url.rfind('/')]
+            if team_url.endswith('/'):
+                team_url = team_url[:-1]
+            team_urls.append("{}/{}-{}".format(team_url, int(season) - 1, season))
 
     """ Get the players """
 
