@@ -22,8 +22,6 @@ def main():
         '--icetime', action='store_true', help="NHL icetime for season")
     arg_parser.add_argument('--multiple_teams', action='store_true',
                             help="Whether to show all teams a player has played for")
-    arg_parser.add_argument('--full_dob', action='store_true',
-                            help="Whether to fetch a player's full DOB (much slower)")
     arg_parser.add_argument('leagues', type=helpers.comma_delimited_list,
                             help="Comma-delimited list (no spaces) of leagues")
     arg_parser.add_argument('start_season', type=int,
@@ -56,8 +54,7 @@ def main():
 
         for league in args.leagues:
             for season in range(start_season, end_season + 1):
-                roster.get_player_rosters(
-                    league, season, results_array, multiple_teams, full_dob=args.full_dob)
+                roster.get_player_rosters(league, season, results_array, multiple_teams)
 
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_rosters.csv'.format(
             start_season, end_season, '-'.join(args.leagues)))
@@ -72,7 +69,7 @@ def main():
             league = args.leagues[0]
             for season in range(start_season, end_season + 1):
                 teamroster.get_team_roster('https://eliteprospects.com/team.php?team={0}&year0={1}'.format(
-                    args.team_roster, season), season, league, results_array=results_array, full_dob=args.full_dob)
+                    args.team_roster, season), season, league, results_array=results_array)
 
         helpers.export_array_to_csv(results_array, '{0}-{1}_{2}_team_rosters.csv'.format(
             start_season, end_season, '-'.join(args.leagues)))

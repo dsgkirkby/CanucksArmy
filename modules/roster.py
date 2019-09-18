@@ -4,7 +4,7 @@ import re
 from modules import teamroster, helpers
 
 
-def get_player_rosters(league, season, results_array=None, multiple_teams=False, full_dob=False):
+def get_player_rosters(league, season, results_array=None, multiple_teams=False):
     league = str(league)
     season = str(season)
 
@@ -40,6 +40,6 @@ def get_player_rosters(league, season, results_array=None, multiple_teams=False,
 
     for team_url in team_urls:
         teamroster.get_team_roster(
-            team_url, season, league, player_ids, results_array, multiple_teams, full_dob=full_dob)
+            team_url, season, league, player_ids, results_array, multiple_teams)
 
     return results_array

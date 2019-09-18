@@ -11,7 +11,7 @@ WEIGHT = 8
 SHOOTS = 9
 
 
-def get_team_roster(team_url, season, league_name, player_ids=None, results_array=None, multiple_teams=False, full_dob=False):
+def get_team_roster(team_url, season, league_name, player_ids=None, results_array=None, multiple_teams=False):
     if results_array is None:
         results_array = []
 
@@ -46,24 +46,7 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
                 id = helpers.get_player_id_from_url(
                     name_link.attrib['href'])
                 number = player_stats[JERSEY_NUMBER].text.strip()[1:]
-                dob = player_stats[DOB].get('title').strip()
-                if full_dob:
-                    player_page = html5lib.parse(
-                        requests.get(name_link.attrib['href']).text)
-                    dob_container = player_page.find(
-                        './body/section[2]/div/div[1]/div[4]/div[1]/div/div[2]/section/div[6]/div/div[1]/ul/li[1]/div[2]/a'.replace(
-                            '/', '/' + helpers.html_prefix)
-                    )
-                    if dob_container is None:
-                        print(
-                            'Error looking up full dob - xpath likely needs to be updated')
-
-                    # Some players don't have a DOB listed, in this case we use whatever was in the roster page (probably '-')
-                    try:
-                        dob = dob_container.find(
-                            './{}a'.format(helpers.html_prefix)).text.strip()
-                    except:
-                        pass
+                dob = player_stats[DOB].get('title').strip()f
                 hometown = player_stats[HOMETOWN].find(
                     './{}a'.format(helpers.html_prefix)).text.strip()
                 height = player_stats[HEIGHT].text.strip()
