@@ -56,16 +56,17 @@ def get_ep_table_rows(table):
 
         rows_by_section.append(section_rows)
     else:
-        # first tbody is just the header
-        for section_number in range(1, len(sections)):
+        # first tbody is usually just the header
+        for section_number in range(0, len(sections)):
             # Last row is the title row for the next round (unless it's the last round)
             section_rows = sections[section_number].findall(
                 './/{}tr'.format(html_prefix))
 
-            num_rows = len(section_rows) if section_number == len(
-                sections) - 1 else len(section_rows) - 1
+            if len(section_rows) > 1:
+                num_rows = len(section_rows) if section_number == len(
+                    sections) - 1 else len(section_rows) - 1
 
-            rows_by_section.append(section_rows[:num_rows])
+                rows_by_section.append(section_rows[:num_rows])
 
     return rows_by_section
 
