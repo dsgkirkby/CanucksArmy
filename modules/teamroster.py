@@ -50,7 +50,7 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
                 id = helpers.get_player_id_from_url(
                     name_link.attrib['href'])
                 number = player_stats[JERSEY_NUMBER].text.strip()[1:]
-                dob = player_stats[DOB].get('title').strip()f
+                dob = player_stats[DOB].get('title').strip()
                 hometown = player_stats[HOMETOWN].find(
                     './{}a'.format(helpers.html_prefix)).text.strip()
                 height = player_stats[HEIGHT].text.strip()
