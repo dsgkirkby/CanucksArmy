@@ -34,9 +34,9 @@ def main():
             print('Invalid League: {0}'.format(league))
             return
 
-        if league == 'ahl':
-            print('AHL support requires further work')
-            return
+        #if league == 'ahl':
+        #    print('AHL support requires further work')
+        #    return
 
         seasons = helpers.get_json('http://cluster.leaguestat.com/feed/?feed=modulekit&view=seasons&key={0}&fmt=json&client_code={1}&lang=en&league_code=&fmt=json'.format(hockeytech_api.get_api_key(league), hockeytech_api.get_league_code(league)))['SiteKit']['Seasons']
 
