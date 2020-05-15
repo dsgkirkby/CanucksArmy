@@ -427,8 +427,11 @@ def get_season_stats(
             'Birthplace',
             'Height',
             'Weight',
-            'Shot',
+            'Shoots',
             'GP',
+            'Shots on Goal',
+            'Faceoffs',
+            'Faceoff Wins',
         ])
 
     schedule = get_json('http://cluster.leaguestat.com/feed/?feed=modulekit&view=schedule&key={0}&fmt=json&client_code={1}&lang=en&season_id={2}&team_id=undefined&league_code=&fmt=json'.format(get_api_key(league), get_league_code(league), season['season_id']))['SiteKit']['Schedule']
@@ -452,6 +455,9 @@ def get_season_stats(
             player['weight'],
             player['shoots'],
             player['games_played'],
+            player.get('shots', None),
+            player.get('faceoff_attempts', None),
+            player.get('faceoff_wins', None),
         ]
 
     season_players = listmap(players, convert_player)
