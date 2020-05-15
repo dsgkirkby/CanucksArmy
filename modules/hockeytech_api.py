@@ -131,7 +131,7 @@ def get_game_info(game_info, season_info, league):
         to_return = [
             season,
             season_type,
-            league,
+            league.upper(),
             game_id,
             date,
             home_team if is_home_goal else away_team,
@@ -165,7 +165,7 @@ def get_game_info(game_info, season_info, league):
         return [
             season,
             season_type,
-            league,
+            league.upper(),
             game_id,
             home_team if penalty['home'] == '1' else away_team,
             'Bench' if penalty['bench'] == '1' else player_name(penalty['player_penalized_info']),
@@ -330,7 +330,7 @@ def get_game_info(game_info, season_info, league):
     game_result = [
         season,
         season_type,
-        league,
+        league.upper(),
         game_id,
         date,
         away_team,
@@ -446,7 +446,7 @@ def get_season_stats(
             player['position'],
             season_year(season),
             season_type,
-            league,
+            league.upper(),
             player_team(player),
             player['age'],
             player['birthdate'],
