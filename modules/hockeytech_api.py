@@ -416,6 +416,7 @@ def get_season_stats(
 
     if len(players_results) is 0:
         players_results.append([
+            'Player ID',
             'Player',
             'Position',
             'Season',
@@ -442,6 +443,7 @@ def get_season_stats(
 
     def convert_player(player):
         return [
+            player['player_id'],
             player_name(player),
             player['position'],
             season_year(season),
