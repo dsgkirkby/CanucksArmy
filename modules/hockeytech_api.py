@@ -104,8 +104,10 @@ def get_game_info(game_info, season_info, league):
     is_playoff_game, season_type = season_type_label(season_info)
     game_id = game_info['game_id']
     date = game_summary['meta']['date_played']
-    home_goals = game_summary['totalGoals']['visitor']
-    away_goals = game_summary['totalGoals']['home']
+    away_goals = game_summary['totalGoals']['visitor']
+    home_goals = game_summary['totalGoals']['home']
+    away_shots = game_summary['totalShots']['visitor']
+    home_shots = game_summary['totalShots']['home']
 
     end_clock = game_summary['meta']['game_clock']
     end_minute = int(end_clock[3:5])
@@ -341,6 +343,8 @@ def get_game_info(game_info, season_info, league):
         home_team if home_goals < away_goals else away_team,
         away_roster,
         home_roster,
+        game_summary['totalShots']['visitor'],
+        game_summary['totalShots']['home'],
         total_icetime_seconds / SECONDS_PER_MINUTE,
         ev_5v5_icetime['seconds'] / SECONDS_PER_MINUTE,
     ]
@@ -410,6 +414,8 @@ def get_season_stats(
             'Losing Team',
             'Visitor Roster',
             'Home Roster',
+            'Visitor Shots',
+            'Home Shots',
             'Total Time',
             '5v5 Time',
         ])
