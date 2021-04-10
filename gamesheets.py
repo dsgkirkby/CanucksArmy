@@ -47,7 +47,8 @@ def main():
                 'pre season' not in season['season_name'].lower() and
                 'pre-season' not in season['season_name'].lower() and
                 'tie break' not in season['season_name'].lower() and
-                'tie-break' not in season['season_name'].lower(),
+                'tie-break' not in season['season_name'].lower() and
+                'playoffs' not in season['season_name'].lower(),
             seasons
         )
 
