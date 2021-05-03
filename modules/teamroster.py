@@ -32,7 +32,7 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
         team_name = team_page.find('./body/section[2]/div/div[1]/div[4]/div[1]/div/div[1]/div[2]/div[1]'.replace(
             '/', '/' + helpers.html_prefix)).text.strip()
         
-    team_id = team_url.split("/")[2]
+    team_id = team_url.split("/")[4]
 
     player_table = team_page.find(
         './body/section[2]/div/div[1]/div[4]/div[2]/div[1]/div[1]/div[1]/div[3]/table'.replace('/', '/' + helpers.html_prefix))
@@ -63,7 +63,7 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
                 
             try:
                 height_ft = height_raw.split("'")[0]
-                height_in = height_raw.split("'")[1].split('"')[0]
+                height_in = height_raw.split("'")[1].split("/")[0]
                 height_in += height_ft * 12
                 height_cm = round(float(height_in) * 2.54, 1)
                 height = height_cm
