@@ -41,7 +41,7 @@ def get_player_stats(team_url, season, league_name, results_array, goalie_result
         team_name = team_page.find('./body/section[2]/div/div[1]/div[4]/div[1]/div/div[1]/div[2]/div[1]'.replace(
             '/', '/' + helpers.html_prefix)).text.strip()
     
-    team_id = team_url.split("/")[2]
+    team_id = team_url.split("/")[4]
 
     player_table = team_page.find(
         './body/section[2]/div/div[1]/div[4]/div[2]/div[1]/div[1]/div[4]/table'.replace('/', '/' + helpers.html_prefix))
