@@ -65,10 +65,10 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
                 height_ft = height_raw.split("'")[0]
                 height_in = height_raw.split("'")[1].split('"')[0]
                 height_in += height_ft * 12
-                height_cm = round(height_in * 2.54, 1)
+                height_cm = round(float(height_in) * 2.54, 1)
                 height = height_cm
                 
-                weight = round(weight_raw * 0.4536, 1)
+                weight = round(float(weight_raw) * 0.4536, 1)
             except IndexError:
                 continue
 
