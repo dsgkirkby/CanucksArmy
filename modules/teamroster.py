@@ -56,7 +56,7 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
                 hometown = player_stats[HOMETOWN].find(
                     './{}a'.format(helpers.html_prefix)).text.strip()
                 height_raw = player_stats[HEIGHT].text.strip()
-                weight = player_stats[WEIGHT].text.strip()
+                weight_raw = player_stats[WEIGHT].text.strip()
                 shoots = player_stats[SHOOTS].text.strip()
             except IndexError:
                 continue
@@ -65,8 +65,10 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
                 height_ft = height_raw.split("'")[0]
                 height_in = height_raw.split("'")[1].split('"')[0]
                 height_in += height_ft * 12
-                height_cm = round(height_in * 2.54,1)
+                height_cm = round(height_in * 2.54, 1)
                 height = height_cm
+                
+                weight = round(weight_raw * 0.4536, 1)
             except IndexError:
                 continue
 
