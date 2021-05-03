@@ -63,7 +63,7 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
                 
             try:
                 height_ft = height_raw.split("'")[0]
-                height_in = height_raw.split("'")[1].split("/")[0]
+                height_in = height_raw.split("'")[1].split("\")[0]
                 height_in += height_ft * 12
                 height_cm = round(float(height_in) * 2.54, 1)
                 height = height_cm
