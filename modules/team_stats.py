@@ -29,7 +29,7 @@ def get_player_stats(team_url, season, league_name, results_array, goalie_result
 
     if len(goalie_results_array) == 0:
         goalie_results_array.append(
-            ['ID', Name', 'Season', 'League', 'Team', 'GP', 'GAA', 'SV%', 'Team ID'])
+            ['ID', 'Name', 'Season', 'League', 'Team', 'GP', 'GAA', 'SV%', 'Team ID'])
 
     team_search_request = requests.get(team_url + '?tab=stats#players')
     team_page = html5lib.parse(team_search_request.text)
