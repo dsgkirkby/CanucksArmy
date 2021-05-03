@@ -43,8 +43,8 @@ def get_league_standings(league, season, results_array=None):
         for team in conference:
             team_stats = team.findall('.//{0}td'.format(html_prefix))
             
-            team_id = team_stats[NAME].find(
-                './/{0}span/{0}a'.format(html_prefix)).a.get('href').split("/")[4]
+            team_url: str = team.find('.//{0}td[2]/{0}span/{0}a'.format(html_prefix)).attrib['href']
+            team_id = team_url.split("/")[4]
 
             name = team_stats[NAME].find(
                 './/{0}span/{0}a'.format(html_prefix)).text.strip()
