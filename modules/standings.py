@@ -24,7 +24,7 @@ def get_league_standings(league, season, results_array=None):
     season = str(season)
 
     if results_array is None or len(results_array) == 0:
-        results_array.append(['Team Name', 'League', 'Season', 'Games',
+        results_array.append(['Team ID', 'Team Name', 'League', 'Season', 'Games',
                               'W', 'L', 'OT', 'GF', 'GA', 'Points', 'PostSeason'])
 
     standings_url = 'http://www.eliteprospects.com/standings.php?league={0}&startdate={1}'.format(
@@ -42,6 +42,9 @@ def get_league_standings(league, season, results_array=None):
     for conference in teams_by_conference:
         for team in conference:
             team_stats = team.findall('.//{0}td'.format(html_prefix))
+            
+            team_url: str = team.find('.//{0}td[2]/{0}span/{0}a'.format(html_prefix)).attrib['href']
+            team_id = team_url.split("/")[4]
 
             name = team_stats[NAME].find(
                 './/{0}span/{0}a'.format(html_prefix)).text.strip()
@@ -64,6 +67,7 @@ def get_league_standings(league, season, results_array=None):
             postseason = ''.join(team_stats[POSTSEASON].itertext()).strip()
 
             results_array.append([
+                team_id,
                 name,
                 league,
                 season,

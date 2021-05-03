@@ -21,21 +21,27 @@ def get_player_stats(team_url, season, league_name, results_array, goalie_result
         results_array = []
 
     if len(results_array) == 0:
-        results_array.append(['Name', 'Position', 'Season', 'League',
-                              'Team', 'GP', 'G', 'A', 'TP', 'PIM', '+/-', 'ID'])
+        results_array.append(['ID', 'Name', 'Position', 'Season', 'League',
+                              'Team', 'GP', 'G', 'A', 'TP', 'PIM', '+/-', 'Team ID'])
 
     if goalie_results_array is None:
         goalie_results_array = []
 
     if len(goalie_results_array) == 0:
         goalie_results_array.append(
-            ['Name', 'Season', 'League', 'Team', 'GP', 'GAA', 'SV%', 'ID'])
+            ['ID', 'Name', 'Season', 'League', 'Team', 'GP', 'GAA', 'SV%', 'Team ID'])
 
     team_search_request = requests.get(team_url + '?tab=stats#players')
     team_page = html5lib.parse(team_search_request.text)
 
-    team_name = team_page.find('./body/section[2]/div/div[1]/div[4]/div[1]/div/div[1]/div[2]/div[2]'.replace(
-        '/', '/' + helpers.html_prefix)).text.strip()
+    try:
+        team_name = team_page.find('./body/section[2]/div/div[1]/div[4]/div[1]/div/div[1]/div[2]/div[2]'.replace(
+            '/', '/' + helpers.html_prefix)).text.strip()
+    except:
+        team_name = team_page.find('./body/section[2]/div/div[1]/div[4]/div[1]/div/div[1]/div[2]/div[1]'.replace(
+            '/', '/' + helpers.html_prefix)).text.strip()
+    
+    team_id = team_url.split("/")[4]
 
     player_table = team_page.find(
         './body/section[2]/div/div[1]/div[4]/div[2]/div[1]/div[1]/div[4]/table'.replace('/', '/' + helpers.html_prefix))
@@ -63,6 +69,7 @@ def get_player_stats(team_url, season, league_name, results_array, goalie_result
             plusminus = player_stats[PLUSMINUS].text.strip()
 
             results_array.append([
+                id,
                 name,
                 position,
                 season,
@@ -74,7 +81,7 @@ def get_player_stats(team_url, season, league_name, results_array, goalie_result
                 points,
                 pim,
                 plusminus,
-                id,
+                team_id
             ])
 
     for goalie_group in goalies_grouped:
@@ -92,6 +99,7 @@ def get_player_stats(team_url, season, league_name, results_array, goalie_result
             svp = goalie_stats[GOALIE_SVP].text.strip()
 
             goalie_results_array.append([
+                id,
                 name,
                 season,
                 league_name,
@@ -99,5 +107,5 @@ def get_player_stats(team_url, season, league_name, results_array, goalie_result
                 games,
                 gaa,
                 svp,
-                id,
+                team_id
             ])
