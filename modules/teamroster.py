@@ -19,8 +19,8 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
         player_ids = []
 
     if len(results_array) == 0:
-        results_array.append(['Number', 'Name', 'Position', 'Season', 'League',
-                              'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots', 'ID'])
+        results_array.append(['ID', 'Name', 'Position', 'Season', 'League',
+                              'Team', 'DOB', 'Hometown', 'Height', 'Weight', 'Shoots', 'Number', 'Team ID'])
 
     team_search_request = requests.get(team_url)
     team_page = html5lib.parse(team_search_request.text)
@@ -31,6 +31,8 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
     except:
         team_name = team_page.find('./body/section[2]/div/div[1]/div[4]/div[1]/div/div[1]/div[2]/div[1]'.replace(
             '/', '/' + helpers.html_prefix)).text.strip()
+        
+    team_id = team_url.split("/")[2]
 
     player_table = team_page.find(
         './body/section[2]/div/div[1]/div[4]/div[2]/div[1]/div[1]/div[1]/div[3]/table'.replace('/', '/' + helpers.html_prefix))
@@ -53,9 +55,18 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
                 dob = player_stats[DOB].get('title').strip()
                 hometown = player_stats[HOMETOWN].find(
                     './{}a'.format(helpers.html_prefix)).text.strip()
-                height = player_stats[HEIGHT].text.strip()
+                height_raw = player_stats[HEIGHT].text.strip()
                 weight = player_stats[WEIGHT].text.strip()
                 shoots = player_stats[SHOOTS].text.strip()
+            except IndexError:
+                continue
+                
+            try:
+                height_ft = height_raw.split("'")[0]
+                height_in = height_raw.split("'")[1].split('"')[0]
+                height_in += height_ft * 12
+                height_cm = round(height_in * 2.54,1)
+                height = height_cm
             except IndexError:
                 continue
 
@@ -69,7 +80,7 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
                 player_ids.append(player_id)
 
             results_array.append([
-                number,
+                id,
                 name,
                 position,
                 season,
@@ -80,5 +91,6 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
                 height,
                 weight,
                 shoots,
-                id,
+                number,
+                team_id
             ])
