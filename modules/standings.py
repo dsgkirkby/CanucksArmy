@@ -31,11 +31,11 @@ def get_league_standings(league, season, results_array=None):
         league, str(int(season) - 1) + "-" + season)    
     request = requests.get(standings_url)
     standings_page = html5lib.parse(request.text)
-    print(request.text)
 
     standings_table = standings_page.find(
         './body/section/div/div/div[1]/div[1]/div/div/div[2]/table'.replace('/', '/' + html_prefix))
 
+    print(standings_table)
     teams_by_conference = helpers.get_ep_table_rows(standings_table)
 
     """ Parse the team standings table """
