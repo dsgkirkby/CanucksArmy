@@ -28,7 +28,7 @@ def get_league_standings(league, season, results_array=None):
                               'W', 'L', 'OT', 'GF', 'GA', 'Points', 'PostSeason'])
 
     standings_url = 'http://www.eliteprospects.com/standings.php?league={0}&startdate={1}'.format(
-        league, str(int(season) - 1))
+        league, str(int(season) - 1) + "-" + str(season))
     request = requests.get(standings_url)
     standings_page = html5lib.parse(request.text)
 
