@@ -48,10 +48,10 @@ def get_player_id_from_url(url):
 
 def get_ep_table_rows(table):
     rows_by_section = []
-    sections = table.findall('.//{}tbody'.format(html_prefix))
+    sections = table.find_all('.//{}tbody'.format(html_prefix))
 
     if len(sections) == 1:  # this is the case when there's no category to group by, for example a league without conferences
-        section_rows = sections[0].findall(
+        section_rows = sections[0].find_all(
             './/{}tr'.format(html_prefix))
 
         rows_by_section.append(section_rows)
@@ -59,7 +59,7 @@ def get_ep_table_rows(table):
         # first tbody is usually just the header
         for section_number in range(0, len(sections)):
             # Last row is the title row for the next round (unless it's the last round)
-            section_rows = sections[section_number].findall(
+            section_rows = sections[section_number].find_all(
                 './/{}tr'.format(html_prefix))
 
             if len(section_rows) > 1:
