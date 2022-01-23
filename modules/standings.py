@@ -33,7 +33,7 @@ def get_league_standings(league, season, results_array=None):
     standings_page = html5lib.parse(request.text)
 
     standings_table = standings_page.find(
-        './body/section[2]/div/div[1]/div[4]/div[2]/div[1]/div/div[3]/table'.replace('/', '/' + html_prefix))
+        './/*[@id="standings"]/{0}div/{0}div[3]/{0}table'.replace('{0}', html_prefix))
 
     teams_by_conference = helpers.get_ep_table_rows(standings_table)
 
