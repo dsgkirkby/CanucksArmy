@@ -2,18 +2,18 @@ import requests
 import html5lib
 from modules import helpers
 
-NAME = 1
-GAMES = 2
-GOALS = 3
-ASSISTS = 4
-POINTS = 5
-PIM = 6
-PLUSMINUS = 7
+NAME = 2
+GAMES = 3
+GOALS = 4
+ASSISTS = 5
+POINTS = 6
+PIM = 7
+PLUSMINUS = 8
 
-GOALIE_NAME = 1
-GOALIE_GP = 2
-GOALIE_GAA = 3
-GOALIE_SVP = 4
+GOALIE_NAME = 2
+GOALIE_GP = 3
+GOALIE_GAA = 4
+GOALIE_SVP = 5
 
 
 def get_player_stats(team_url, season, league_name, results_array, goalie_results_array):
@@ -34,13 +34,12 @@ def get_player_stats(team_url, season, league_name, results_array, goalie_result
     team_search_request = requests.get(team_url + '?tab=stats#players')
     team_page = html5lib.parse(team_search_request.text)
 
-    team_name = team_page.find('./body/section[2]/div/div[1]/div[4]/div[1]/div/div[1]/div[2]/div[2]'.replace(
-        '/', '/' + helpers.html_prefix)).text.strip()
+    team_name = team_page.find('.//*[@id="name-and-logo"]/{0}h1'.format(helpers.html_prefix)).text.strip()
 
     player_table = team_page.find(
-        './body/section[2]/div/div[1]/div[4]/div[2]/div[1]/div[1]/div[4]/table'.replace('/', '/' + helpers.html_prefix))
+        './/*[@id="players"]/{0}div[1]/{0}div[4]/{0}table'.format(helpers.html_prefix))
     goalies_table = team_page.find(
-        './body/section[2]/div/div[1]/div[4]/div[2]/div[1]/div[2]/div[2]/table'.replace('/', '/' + helpers.html_prefix))
+        './/*[@id="players"]/{0}div[2]/{0}div[2]/{0}table'.format(helpers.html_prefix))
 
     players_grouped = helpers.get_ep_table_rows(player_table)
     goalies_grouped = helpers.get_ep_table_rows(goalies_table)

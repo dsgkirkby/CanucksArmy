@@ -24,7 +24,7 @@ def get_player_stats(league, season, results_array=None, goalie_results_array=No
     html_prefix = '{http://www.w3.org/1999/xhtml}'
     team_search_page = html5lib.parse(team_search_request.text)
     team_table = team_search_page.find(
-        './body/section[2]/div/div[1]/div[4]/div[2]/div[1]/div/div[3]/table'.replace('/', '/' + html_prefix))
+        './/*[@id="standings"]/{0}div/{0}div[3]/{0}table'.replace('{0}', html_prefix))
 
     teams_by_conference = helpers.get_ep_table_rows(team_table)
 
