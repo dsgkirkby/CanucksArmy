@@ -25,15 +25,10 @@ def get_team_roster(team_url, season, league_name, player_ids=None, results_arra
     team_search_request = requests.get(team_url)
     team_page = html5lib.parse(team_search_request.text)
 
-    try:
-        team_name = team_page.find('./body/section[2]/div/div[1]/div[4]/div[1]/div/div[1]/div[2]/div[2]'.replace(
-            '/', '/' + helpers.html_prefix)).text.strip()
-    except:
-        team_name = team_page.find('./body/section[2]/div/div[1]/div[4]/div[1]/div/div[1]/div[2]/div[1]'.replace(
-            '/', '/' + helpers.html_prefix)).text.strip()
+    team_name = team_page.find('.//*[@id="name-and-logo"]/{0}h1'.format(helpers.html_prefix)).text.strip()
 
     player_table = team_page.find(
-        './body/section[2]/div/div[1]/div[4]/div[2]/div[1]/div[1]/div[1]/div[3]/table'.replace('/', '/' + helpers.html_prefix))
+        './/*[@id="roster"]/{0}div/{0}div[3]/{0}table'.format(helpers.html_prefix))
 
     players_by_position = helpers.get_ep_table_rows(player_table)
 
