@@ -1,7 +1,8 @@
 import sys
 import datetime
 import requests
-from urllib.parse import urljoin, urlencode
+from os import path
+from urllib.parse import urlencode
 
 from modules import helpers
 
@@ -15,10 +16,10 @@ SEASON_TYPES = {
 
 
 def get_schedule(season: str, season_type: str):
-    teams_url = urljoin(API_URL, 'teams/info')
+    teams_url = path.join(API_URL, 'teams', 'info')
     teams = requests.get(teams_url).json()['teams']
 
-    games_url = urljoin(API_URL, 'games') + '?' + urlencode({'tournament': SEASON_TYPES[season_type], 'season': season})
+    games_url = path.join(API_URL, 'games') + '?' + urlencode({'tournament': SEASON_TYPES[season_type], 'season': season})
     all_games = requests.get(games_url).json()
 
     result = []
@@ -49,5 +50,51 @@ def get_schedule(season: str, season_type: str):
     helpers.export_dict_array_to_csv(result, f'Liiga-{season}-{season_type}-schedule.csv')
 
 
+def convert_toi(toi):
+    minutes = toi // 60
+    seconds = toi % 60
+    return f'{str(minutes).zfill(2)}:{str(seconds).zfill(2)}'
+
+
+def get_birthplace(player):
+    birth_locality = player['birth_locality']
+    if not birth_locality:
+        return ''
+    return ", ".join([
+        birth_locality['name'],
+        birth_locality['country']['code']
+    ])
+
+
+def get_players(season_raw: str, season_type: str):
+    season = str(int(season_raw) - 1)  # wtf Liiga, different season representation for players vs games??
+    players_url = path.join(API_URL, 'players', 'stats', season, SEASON_TYPES[season_type])
+    all_players = requests.get(players_url).json()
+
+    result = []
+    for player in all_players:
+        result.append({
+            'Player ID': player['fiha_id'],
+            'Player': player['full_name'],
+            'Position': player['current_position'],
+            'Season': season,
+            'Season Type': season_type,
+            'League': 'Liiga',
+            'Team': player['team'],
+            'Birthdate': player['date_of_birth'],
+            'Birthplace': get_birthplace(player),
+            'Height': player['height'],
+            'Weight': player['weight'],
+            'Shoots': player['handedness'],
+            'GP': player['games'],
+            'Shots on Goal': player['shots_into_goal'],
+            'TOI': convert_toi(player['time_on_ice_avg']),
+        })
+
+    helpers.export_dict_array_to_csv(result, f'Liiga-{season_raw}-{season_type}-players.csv')
+
+
 if __name__ == '__main__':
-    get_schedule(sys.argv[1], sys.argv[2])
+    _, season, season_type = sys.argv
+    get_schedule(season, season_type)
+    get_players(season, season_type)
