@@ -19,6 +19,13 @@ def export_array_to_csv(array, name):
                 print(e)
 
 
+def export_dict_array_to_csv(array, name):
+    with open(name, 'w', newline='') as csvFile:
+        writer = csv.DictWriter(csvFile, array[0].keys())
+        writer.writeheader()
+        writer.writerows(array)
+
+
 def comma_delimited_list(string):
     return string.split(',')
 
