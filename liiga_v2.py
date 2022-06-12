@@ -30,6 +30,14 @@ def get_schedule(season: str, season_type: str):
         away_goals = game['awayTeam']['goals']
         if home_goals == away_goals:
             raise ValueError('Unexpected: game ended with a tied score.')
+
+        game_url = path.join(API_URL, 'games', season, str(game['id'])) + '?' + urlencode({'tournament': SEASON_TYPES[season_type]})
+        game_info = requests.get(game_url).json()
+        home_roster, away_roster = (
+            ', '.join(f"{player['firstName'].title()} {player['lastName'].title()}" for player in game_info[roster])
+            for roster in ['homeTeamPlayers', 'awayTeamPlayers']
+        )
+
         result.append({
             'Season': season,
             'Season Type': season_type,
@@ -42,8 +50,8 @@ def get_schedule(season: str, season_type: str):
             'Home GF': home_goals,
             'Winning Team': home_team if home_goals > away_goals else away_team,
             'Losing Team': away_team if home_goals > away_goals else home_team,
-            # TODO: rosters
-            # TODO: shots
+            'Visitor Roster': away_roster,
+            'Home Roster': home_roster,
             'Total Time': game['gameTime'] / 60,
         })
 
