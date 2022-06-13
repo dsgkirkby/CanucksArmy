@@ -80,9 +80,10 @@ def get_schedule(season: str, season_type: str):
     games_url = path.join(API_URL, 'games') + '?' + urlencode({'tournament': SEASON_TYPES[season_type], 'season': season})
     all_games = requests.get(games_url).json()
 
-    for game in all_games:
     games_result = []
     goals_result = []
+
+    for game in all_games:
 
         home_team = teams[game['homeTeam']['teamId']]['name']
         away_team = teams[game['awayTeam']['teamId']]['name']
