@@ -49,6 +49,24 @@ def get_strength(goal_types):
     return ''
 
 
+def get_penalties_from_game_info(
+        game_info,
+        penalty_events,
+        penalized_team,
+        players_by_id,
+):
+    return [{
+        **game_info,
+        'Team': penalized_team,
+        'Player': players_by_id[penalty['playerId']] if penalty['playerId'] != 0 else 'Bench',
+        'Offense': '',
+        'Minutes': penalty['penaltyMinutes'],
+        'Period': penalty['period'],
+        'Time': convert_toi(penalty['penaltyBegintime']),
+        'Strength': '',
+    } for penalty in penalty_events]
+
+
 def get_goals_from_game_info(
         game_info,
         goal_events,
@@ -89,8 +107,11 @@ def get_schedule(season: str, season_type: str):
 
     games_result = []
     goals_result = []
+    penalties_result = []
 
-    for game in all_games:
+    for i, game in enumerate(all_games):
+        if i > 30:
+            break
 
         home_team = teams[game['homeTeam']['teamId']]['name']
         away_team = teams[game['awayTeam']['teamId']]['name']
@@ -131,6 +152,19 @@ def get_schedule(season: str, season_type: str):
             'Total Time': game['gameTime'] / 60,
         })
 
+        penalties_result.extend(get_penalties_from_game_info(
+            common_game_info,
+            game_info['game']['awayTeam']['penaltyEvents'],
+            away_team,
+            away_roster_by_id,
+        ))
+        penalties_result.extend(get_penalties_from_game_info(
+            common_game_info,
+            game_info['game']['homeTeam']['penaltyEvents'],
+            home_team,
+            home_roster_by_id,
+        ))
+
         goals_result.extend(get_goals_from_game_info(
             common_game_info,
             game_info['game']['awayTeam']['goalEvents'],
@@ -152,6 +186,7 @@ def get_schedule(season: str, season_type: str):
 
     helpers.export_dict_array_to_csv(games_result, f'Liiga-{season}-{season_type}-schedule.csv')
     helpers.export_dict_array_to_csv(goals_result, f'Liiga-{season}-{season_type}-goals.csv')
+    helpers.export_dict_array_to_csv(penalties_result, f'Liiga-{season}-{season_type}-penalties.csv')
 
 
 def get_birthplace(player):
