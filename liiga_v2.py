@@ -4,6 +4,8 @@ import requests
 from os import path
 from urllib.parse import urlencode
 
+from json import JSONDecodeError
+
 from modules import helpers
 
 API_URL = 'https://liiga.fi/api/v1/'
@@ -56,7 +58,6 @@ def get_goals_from_game_info(
         players_by_jersey_number,
         opposing_players_by_jersey_number
 ):
-
     return [{
         **game_info,
         'GF Team': scoring_team,
@@ -67,15 +68,21 @@ def get_goals_from_game_info(
         'Assist1': players_by_id[event['assistantPlayerIds'][0]] if len(event['assistantPlayerIds']) >= 1 else '',
         'Assist2': players_by_id[event['assistantPlayerIds'][1]] if len(event['assistantPlayerIds']) >= 2 else '',
         'Strength': get_strength(event['goalTypes']),
-        'Plus': ' '.join(players_by_jersey_number[player] for player in event['plusPlayerIds'].split(' ')) if event['plusPlayerIds'] else '',
-        'Minus': ' '.join(opposing_players_by_jersey_number[player] for player in event['minusPlayerIds'].split(' ')) if event['minusPlayerIds'] else '',
+        'Plus': ', '.join(players_by_jersey_number[player] for player in event['plusPlayerIds'].split(' ')) if event['plusPlayerIds'] else '',
+        'Minus': ', '.join(opposing_players_by_jersey_number[player] for player in event['minusPlayerIds'].split(' ')) if event['minusPlayerIds'] else '',
         'Situation': get_situation(event['goalTypes']),
     } for event in goal_events if NO_GOAL not in event['goalTypes']]
 
 
 def get_schedule(season: str, season_type: str):
     teams_url = path.join(API_URL, 'teams', 'info')
-    teams = requests.get(teams_url).json()['teams']
+    teams_request = requests.get(teams_url)
+    try:
+        teams = teams_request.json()['teams']
+    except JSONDecodeError:
+        print("Error parsing result. Got response:")
+        print(teams_request.text)
+        return
 
     games_url = path.join(API_URL, 'games') + '?' + urlencode({'tournament': SEASON_TYPES[season_type], 'season': season})
     all_games = requests.get(games_url).json()
