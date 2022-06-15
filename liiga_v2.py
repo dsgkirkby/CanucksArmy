@@ -108,7 +108,9 @@ def get_schedule(season: str, season_type: str):
     goals_result = []
     penalties_result = []
 
-    for game in all_games:
+    for i, game in enumerate(all_games):
+        print(f"\nCompleted {i}/{len(all_games)} games", end='\r')
+
         home_team = teams[game['homeTeam']['teamId']]['name']
         away_team = teams[game['awayTeam']['teamId']]['name']
         home_goals = game['homeTeam']['goals']
