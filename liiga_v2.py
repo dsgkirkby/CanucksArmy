@@ -186,8 +186,6 @@ def get_schedule(season: str, season_type: str):
     helpers.export_dict_array_to_csv(goals_result, f'Liiga-{season}-{season_type}-goals.csv')
     helpers.export_dict_array_to_csv(penalties_result, f'Liiga-{season}-{season_type}-penalties.csv')
 
-    print('Done!')
-
 
 def get_birthplace(player):
     birth_locality = player['birth_locality']
@@ -231,3 +229,5 @@ if __name__ == '__main__':
     _, season, season_type = sys.argv
     get_schedule(season, season_type)
     get_players(season, season_type)
+
+    print('Done!')
