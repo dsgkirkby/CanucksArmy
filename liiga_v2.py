@@ -1,14 +1,13 @@
 import sys
 import datetime
 import requests
-from os import path
 from urllib.parse import urlencode
 
 from json import JSONDecodeError
 
 from modules import helpers
 
-API_URL = 'https://liiga.fi/api/v1/'
+API_URL = 'https://liiga.fi/api/v1'
 
 SEASON_TYPES = {
     'preseason': 'valmistavat_ottelut',
@@ -93,7 +92,7 @@ def get_goals_from_game_info(
 
 
 def get_schedule(season: str, season_type: str):
-    teams_url = path.join(API_URL, 'teams', 'info')
+    teams_url = f"{API_URL}/teams/info"
     teams_request = requests.get(teams_url)
     try:
         teams = teams_request.json()['teams']
@@ -101,7 +100,7 @@ def get_schedule(season: str, season_type: str):
         print(f"Error parsing result when fetching {teams_url}. Got response with code: {teams_request.status_code}")
         return
 
-    games_url = path.join(API_URL, 'games') + '?' + urlencode({'tournament': SEASON_TYPES[season_type], 'season': season})
+    games_url = f"{API_URL}/games?{urlencode({'tournament': SEASON_TYPES[season_type], 'season': season})}"
     all_games = requests.get(games_url).json()
 
     games_result = []
@@ -118,7 +117,7 @@ def get_schedule(season: str, season_type: str):
         if home_goals == away_goals:
             raise ValueError('Unexpected: game ended with a tied score.')
 
-        game_url = path.join(API_URL, 'games', season, str(game['id'])) + '?' + urlencode({'tournament': SEASON_TYPES[season_type]})
+        game_url = f"{API_URL}/games/{season}/{game['id']}?{urlencode({'tournament': SEASON_TYPES[season_type]})}"
         game_info = requests.get(game_url).json()
         home_roster_by_jersey, away_roster_by_jersey = (
             {str(player['jersey']): f"{player['firstName'].title()} {player['lastName'].title()}" for player in game_info[roster]}
@@ -199,7 +198,7 @@ def get_birthplace(player):
 
 def get_players(season_raw: str, season_type: str):
     season = str(int(season_raw) - 1)  # wtf Liiga, different season representation for players vs games??
-    players_url = path.join(API_URL, 'players', 'stats', season, SEASON_TYPES[season_type])
+    players_url = f"{API_URL}/players/stats/{season}/{SEASON_TYPES[season_type]}"
     all_players = requests.get(players_url).json()
 
     result = []
