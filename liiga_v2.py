@@ -108,7 +108,6 @@ def get_schedule(season: str, season_type: str):
     penalties_result = []
 
     for i, game in enumerate(all_games):
-        print(f"\nCompleted {i}/{len(all_games)} games", end='\r')
 
         home_team = teams[game['homeTeam']['teamId']]['name']
         away_team = teams[game['awayTeam']['teamId']]['name']
@@ -181,9 +180,13 @@ def get_schedule(season: str, season_type: str):
             away_roster_by_jersey
         ))
 
+        print(f"Completed {i + 1}/{len(all_games)} games")
+
     helpers.export_dict_array_to_csv(games_result, f'Liiga-{season}-{season_type}-schedule.csv')
     helpers.export_dict_array_to_csv(goals_result, f'Liiga-{season}-{season_type}-goals.csv')
     helpers.export_dict_array_to_csv(penalties_result, f'Liiga-{season}-{season_type}-penalties.csv')
+
+    print('Done!')
 
 
 def get_birthplace(player):
