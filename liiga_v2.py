@@ -98,8 +98,7 @@ def get_schedule(season: str, season_type: str):
     try:
         teams = teams_request.json()['teams']
     except JSONDecodeError:
-        print("Error parsing result. Got response:")
-        print(teams_request.text)
+        print(f"Error parsing result when fetching {teams_url}. Got response with code: {teams_request.status_code}")
         return
 
     games_url = path.join(API_URL, 'games') + '?' + urlencode({'tournament': SEASON_TYPES[season_type], 'season': season})
