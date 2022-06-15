@@ -109,10 +109,7 @@ def get_schedule(season: str, season_type: str):
     goals_result = []
     penalties_result = []
 
-    for i, game in enumerate(all_games):
-        if i > 30:
-            break
-
+    for game in all_games:
         home_team = teams[game['homeTeam']['teamId']]['name']
         away_team = teams[game['awayTeam']['teamId']]['name']
         home_goals = game['homeTeam']['goals']
