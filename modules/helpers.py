@@ -23,6 +23,10 @@ def export_dict_array_to_csv(array, name):
     with open(name, 'w', newline='') as csvFile:
         writer = csv.DictWriter(csvFile, array[0].keys())
         writer.writeheader()
+        for row in array:
+            for key, val in row.items():
+                if isinstance(val, str):
+                    row[key] = unidecode(val)
         writer.writerows(array)
 
 
